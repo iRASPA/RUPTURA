@@ -1,0 +1,33 @@
+SimulationType           MixturePrediction
+
+DisplayName              MIL-47
+Temperature              443.0   // [K]
+PressureStart            1e0     // lowest pressure
+PressureEnd              1e7     // highest pressure
+NumberOfPressurePoints   100     // number of points equally spaced in log-scale or linear scale
+PressureScale            log     // [log, or linear]
+
+Component 0 MoleculeName               o-xylene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        2.8  5.03e-3  1.08
+            Langmuir-Freundlich        0.8  3.78e-4  0.8
+
+Component 1 MoleculeName               m-xylene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        2.6  2.48e-3  1.1 
+            Langmuir-Freundlich        0.8  3.86e-5  0.9
+
+Component 2 MoleculeName               p-xylene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        2.8  3.22e-3  1.07
+            Langmuir-Freundlich        0.8  3.23e-5  0.9
+
+Component 3 MoleculeName               ethylbenzene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.9  3.94e-4  0.62
+            Langmuir-Freundlich        2.2  4.73e-3  1.05
+

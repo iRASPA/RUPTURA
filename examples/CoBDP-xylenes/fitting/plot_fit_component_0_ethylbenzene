@@ -1,0 +1,28 @@
+set encoding utf8
+set xlabel 'Pressure, {/Helvetica-Italic p} / [Pa]' font "Helvetica,18"
+set ylabel 'Absolute loading, {/Helvetica-Italic q} / [mol/kg]' offset 0.0,0 font "Helvetica,18"
+set bmargin 4
+set yrange[0:]
+set log x
+set key  right bottom vertical samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'
+set key title 'ethylbenzene'
+set output 'isotherms_fit_ethylbenzene.pdf'
+set term pdf color solid
+array s[6]
+s[1]=5.22624
+s[2]=1278.57
+s[3]=1.76462
+s[4]=3.0462
+s[5]=1.27205e+08
+s[6]=1.45321
+array p[6]
+p[1]=3.27932
+p[2]=0.0026606
+p[3]=0.401928
+p[4]=4.01139
+p[5]=3.66996e-07
+p[6]=1.94119
+plot \
+s[1]*s[2]*x**s[3]/(1.0+s[2]*x**s[3])+s[4]*s[5]*x**s[6]/(1.0+s[5]*x**s[6]) title 'start f(x)' with li dt 2 lw 2,\
+p[1]*p[2]*x**p[3]/(1.0+p[2]*x**p[3])+p[4]*p[5]*x**p[6]/(1.0+p[5]*x**p[6]) title 'fit f(x)' with li lw 2,\
+'Results.dat-CoBDP-P1-Repeat-433K-p-xylene' us 3:8 title 'raw data' with po pt 5 ps 0.5

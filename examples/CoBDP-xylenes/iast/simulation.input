@@ -1,0 +1,33 @@
+SimulationType           MixturePrediction
+
+DisplayName              CoBDP
+Temperature              443.0   // [K]
+PressureStart            1e2     // lowest pressure
+PressureEnd              1e6     // highest pressure
+NumberOfPressurePoints   100     // number of points equally spaced in log-scale or linear scale
+PressureScale            log     // [log, or linear]
+
+Component 0 MoleculeName               o-xylene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        4.8  1.28e-5  1.4
+            Langmuir-Freundlich        1.5  1.6e-4   0.7
+
+Component 1 MoleculeName               m-xylene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        4.8  3.19e-5  1.27
+            Langmuir-Freundlich        1.2  4.72e-5  0.7
+
+Component 2 MoleculeName               p-xylene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        4.5  2.3e-6   1.7 
+            Langmuir-Freundlich        1.6  1.46e-4  0.7
+
+Component 3 MoleculeName               ethylbenzene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        4.5  7.38e-6  1.5 
+            Langmuir-Freundlich        1.4  1.6e-4   0.7 
+

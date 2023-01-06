@@ -1,0 +1,75 @@
+SimulationType           Breakthrough    
+
+// Column settings
+DisplayName              BEA
+Temperature              552.0           // [K]
+ColumnVoidFraction       0.4             // [-]
+ParticleDensity          1508.52         // [kg/m^3]
+TotalPressure            1.2e5           // [Pa]
+PressureGradient        -1000.0          // [Pa/m] 
+ColumnEntranceVelocity   0.019           // [m/s]
+ColumnLength             0.1             // [m]
+
+// Run settings
+NumberOfTimeSteps       auto
+PrintEvery              10000
+WriteEvery              10000
+TimeStep                0.0005           // [s]
+NumberOfGridPoints      100
+
+Component 0 MoleculeName               Helium
+            GasPhaseMolFraction        0.93    // [-]
+            CarrierGas                 yes
+
+Component 1 MoleculeName               nC7
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir                   1.09984 6.55857e-05
+            Langmuir                   0.19466 8.90731e-07
+
+Component 2 MoleculeName               C6m2
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir                   1.22228  3.90895e-05
+            Langmuir                   0.481726 9.64046e-08
+
+Component 3 MoleculeName               C6m3
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir                   1.25189  2.6174e-05
+            Langmuir                   0.518406 7.99897e-08 
+
+Component 4 MoleculeName               C5m2m2
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      1
+            Langmuir                   1.45556 6.99287e-06
+
+Component 5 MoleculeName               C5m2m3
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      1
+            Langmuir                   1.53957 1.41992e-05
+
+Component 6 MoleculeName               C5m2m4
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      1
+            Langmuir                   1.52841 2.11233e-05
+
+Component 7 MoleculeName               C5m3m3
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      1
+            Langmuir                   1.54948 4.398e-06
+

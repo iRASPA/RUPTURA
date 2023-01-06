@@ -1,0 +1,39 @@
+SimulationType           Breakthrough
+
+// Column settings
+DisplayName              MOR
+Temperature              300.0           // [K]
+ColumnVoidFraction       0.4             // [-]
+ParticleDensity          1693.89         // [kg/m^3]
+TotalPressure            2.5e6           // [Pa]
+PressureGradient         0.0             // [Pa/m]
+ColumnEntranceVelocity   0.1             // [m/s]
+ColumnLength             0.3             // [m]
+
+// Run settings
+NumberOfTimeSteps       auto
+PrintEvery              10000
+WriteEvery              10000
+TimeStep                0.0005           // [s]
+NumberOfGridPoints      100
+MixturePredictionMethod SEI
+
+Component 0 MoleculeName               Helium
+            GasPhaseMolFraction        0.9    // [-]
+            CarrierGas                 yes
+
+Component 1 MoleculeName               CO2
+            GasPhaseMolFraction        0.05   // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir                   4.4  2.91e-04
+            Langmuir                   10.0 6.96e-07
+
+Component 2 MoleculeName               C3H8
+            GasPhaseMolFraction        0.05   // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir                   4.97 9.30e-09
+            Langmuir                   2.99 2.79e-04

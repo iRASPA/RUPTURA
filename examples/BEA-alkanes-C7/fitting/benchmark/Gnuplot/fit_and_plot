@@ -1,0 +1,83 @@
+#!/usr/bin/gnuplot -persist
+set term postscript eps color enhanced 'Helvetica,14'
+set output 'fitting_nC7_557K_BEA_Toth.eps'
+array s[3]
+array p[3]
+array q[3]
+array o[3]
+#array o[3]
+iso_ISOFIT(x)  = s[1]*s[2]*x/((1.0+(s[2]*x)**s[3])**(1.0/s[3]))
+iso_Ruptura(x) = p[1]*p[2]*x/((1.0+(p[2]*x)**p[3])**(1.0/p[3]))
+iso_Gnuplot(x) = q[1]*q[2]*x/((1.0+(q[2]*x)**q[3])**(1.0/q[3]))
+iso_SciPy(x)   = o[1]*o[2]*x/((1.0+(o[2]*x)**o[3])**(1.0/o[3]))
+iso_IASTpp(x)  = qq*k*x/(1+qq*k*x)
+qq=1.18629 ; k=5.58049E-05
+iso_IASTpp(x)  = qq*(k*x/(1+k*x))
+print qq, k
+#
+f(x) = a + c*x
+# Isofit
+s[1]=1.230917 ; s[2]=7.107193E-05 ; s[3]=0.8047137
+p[1]=1.23106 ; p[2]=7.11309E-05 ; p[3]=0.804171
+o[1]=1.2310643066039624; o[2]=7.113056855275467e-05; o[3]=0.8041731240690193
+# Gnuplot
+q[1]=10.0 ; q[2]=0.1 ; q[3]=1.0
+file = "Results.dat-BEA-Repeat-552K-nC7.txt"
+fit iso_Gnuplot(x) file u 1:2 via q[1],q[2],q[3]
+# MAE
+# Ruptura
+stats file u 2:(iso_Ruptura($1)) name "R"
+stats file u (($2-iso_Ruptura($1))**2) name "MAE"
+Ruptura_label = sprintf("(%1.3f, %1.3f)",sqrt(MAE_sum/(R_records-2)),R_correlation*R_correlation)
+#
+stats file u 2:(iso_ISOFIT($1)) name "R"
+stats file u (($2-iso_ISOFIT($1))**2) name "MAE"
+ISOFIT_label = sprintf("(%1.3f, %1.3f)",sqrt(MAE_sum/(R_records-2)),R_correlation*R_correlation)
+#
+stats file u 2:(iso_IASTpp($1)) name "R"
+stats file u (($2-iso_IASTpp($1))**2) name "MAE"
+IASTpp_label = sprintf("(%1.3f, %1.3f)",sqrt(MAE_sum/(R_records-2)),R_correlation*R_correlation)
+#
+stats file u 2:(iso_SciPy($1)) name "R"
+stats file u (($2-iso_SciPy($1))**2) name "MAE"
+SciPy_label = sprintf("(%1.3f, %1.3f)",sqrt(MAE_sum/(R_records-2)),R_correlation*R_correlation)
+#
+set size 1,0.5
+set multiplot 
+set size 0.5,0.5
+set origin 0,0
+set xlabel 'Pressure, {/Helvetica-Italic p} / [Pa]'
+set ylabel 'Loading, {/Helvetica-Italic q} / [mol/kg]'
+set key top left
+set logscale x
+set format x "10^{%T}"
+set format y "%1.1f"
+set yrange [0:1.4]
+set xrange [1e1:1e7]
+plot file u 1:2 w p pt 7 lc rgb 'black' title 'raw data',\
+     iso_ISOFIT(x)  w l lc rgb '#FF7F00' t 'ISOFIT',\
+     iso_Gnuplot(x) w l lc rgb '#4DAF4A' t 'Gnuplot',\
+     iso_SciPy(x)  w l lc rgb '#fdc328'  t 'SciPy',\
+     iso_IASTpp(x)  w l lc rgb '#984EA3' t 'IAST++ (*)',\
+     iso_Ruptura(x) w l lc rgb '#E41A1C' title 'Ruptura'
+set origin 0.5,0
+set ylabel 'Predicted {/Helvetica-Italic q} / [mol/kg]'
+set xlabel 'Observed {/Helvetica-Italic q} / [mol/kg]'
+unset logscale x
+set xrange [0:1.4]
+set yrange [0:1.4]
+set format x '%1.1f'
+set format y '%1.1f'
+set size ratio 1
+set label 1 "Goodness-of-fit\n(RMSE, {/Helvetica-Italic, r}^2)" at 0.4,1.2+0.1 center front font 'Helvetica,11'
+set label 2 Ruptura_label tc rgb '#E41A1C' at 0.4,1.2-0.1*1 center front font 'Helvetica,11'
+set label 3 ISOFIT_label tc rgb '#FF7F00' at 0.4,1.2-0.1*2 center front font 'Helvetica,11'
+set label 4 SciPy_label tc rgb '#fdc328' at 0.4,1.2-0.1*3 center front font 'Helvetica,11'
+set label 5 IASTpp_label  tc rgb '#984EA3' at 0.4,1.2-0.1*4 center front font 'Helvetica,11'
+plot x w l lc rgb 'grey' notitle,\
+     file u 2:(iso_ISOFIT($1))  w p pt 7 ps 1 lc rgb '#FF7F00' notitle,\
+     file u 2:(iso_Gnuplot($1)) w p pt 7 ps 1 lc rgb '#4DAF4A' notitle,\
+     file u 2:(iso_IASTpp($1))  w p pt 7 ps 1 lc rgb '#984EA3' notitle,\
+     file u 2:(iso_SciPy($1))  w p pt 7 ps 1 lc rgb '#fdc328' notitle,\
+     file u 2:(iso_Ruptura($1)) w p pt 7 ps 1 lc rgb '#E41A1C' notitle
+

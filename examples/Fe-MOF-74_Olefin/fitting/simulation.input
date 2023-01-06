@@ -1,0 +1,32 @@
+SimulationType           Fitting    // [Breakthrough, IAST,or Fitting]
+
+DisplayName              Fe-MOF-74
+ColumnPressure           1
+ColumnLoading            2
+PressureScale            log
+
+Component 0 MoleculeName               1-3-butadiene
+            FileName                   1-3-butadiene.txt
+            NumberOfIsothermSites      3
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+
+Component 1 MoleculeName               1-butene
+            FileName                   1-butene.txt
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+
+Component 2 MoleculeName               2-cis-butene
+            FileName                   2-cis-butene.txt
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+
+Component 3 MoleculeName               2-trans-butene
+            FileName                   2-trans-butene.txt
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+

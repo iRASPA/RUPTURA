@@ -1,0 +1,62 @@
+SimulationType           Breakthrough
+
+// Column settings
+DisplayName              fe2bdp3
+Temperature              443.0           // [K]
+ColumnVoidFraction       0.4             // [-]
+ParticleDensity          1146.041505     // [kg/m^3]
+TotalPressure            2.0e6           // [Pa]
+PressureGradient         0.0             // [Pa/m]
+ColumnEntranceVelocity   0.1             // [m/s]
+ColumnLength             0.3             // [m]
+
+// Run settings
+NumberOfTimeSteps       auto
+PrintEvery              10000
+WriteEvery              10000
+TimeStep                0.0005           // [s]
+NumberOfGridPoints      100
+
+Component 0 MoleculeName               Helium
+            GasPhaseMolFraction        0.95    // [-]
+            CarrierGas                 yes
+
+Component 1 MoleculeName               nC6
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        3.00235 7.25768e-06 0.620377 
+            Langmuir-Freundlich        10.5343 0.00687815 0.9091
+
+Component 2 MoleculeName               2MP
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        8.83778 7.88048e-06 1.25587 
+            Langmuir-Freundlich        5.00817 0.00123702 0.530231
+
+Component 3 MoleculeName               3MP
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        5.77817 2.88082e-05 0.67525 
+            Langmuir-Freundlich        10.3198 3.53526e-05 1.0461
+
+Component 4 MoleculeName               23DMB
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        12.0192 2.91413e-10 1.32848 
+            Langmuir-Freundlich        3.84375 2.83716e-14 1.9199
+
+Component 5 MoleculeName               22DMB
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        14.2226 5.04973e-10 1.41099 
+            Langmuir-Freundlich        1.73058 1.5909e-11 1.40682

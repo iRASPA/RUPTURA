@@ -1,0 +1,40 @@
+set encoding utf8
+set xlabel 'Pressure, {/Helvetica-Italic p} / [Pa]' font "Helvetica,18"
+set ylabel 'Absolute loading, {/Helvetica-Italic q} / [mol/kg]' offset 0.0,0 font "Helvetica,18"
+set bmargin 4
+set yrange[0:]
+set log x
+set key  right bottom vertical samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'
+set key title '3MP'
+set output 'isotherms_fit_3MP.pdf'
+set term pdf color solid
+set linetype 1 pt 5 ps 0.5 lw 2 lc rgb '0xee0000'
+set linetype 2 pt 7 ps 0.5 lw 2 lc rgb '0x008b00'
+set linetype 3 pt 9 ps 0.5 lw 2 lc rgb '0x0000cd'
+set linetype 4 pt 11 ps 0.5 lw 2 lc rgb '0xff3fb3'
+set linetype 5 pt 13 ps 0.5 lw 2 lc rgb '0x00cdcd'
+set linetype 6 pt 15 ps 0.5 lw 2 lc rgb '0xcd9b1d'
+set linetype 7 pt  4 ps 0.5 lw 2 lc rgb '0x8968ed'
+set linetype 8 pt  6 ps 0.5 lw 2 lc rgb '0x8b8b83'
+set linetype 9 pt  8 ps 0.5 lw 2 lc rgb '0x00bb00'
+set linetype 10 pt 10 ps 0.5 lw 2 lc rgb '0x1e90ff'
+set linetype 11 pt 12 ps 0.5 lw 2 lc rgb '0x8b2500'
+set linetype 12 pt 14 ps 0.5 lw 2 lc rgb '0x000000'
+array s[6]
+s[1]=0.386999
+s[2]=1.50597e+10
+s[3]=0.129086
+s[4]=2.24523
+s[5]=2.19542e+08
+s[6]=0.337371
+array p[6]
+p[1]=0.757266
+p[2]=0.00510024
+p[3]=1.97602
+p[4]=3.33102
+p[5]=1.06506e-09
+p[6]=3.58211
+plot \
+s[1]*s[2]*x**s[3]/(1.0+s[2]*x**s[3])+s[4]*s[5]*x**s[6]/(1.0+s[5]*x**s[6]) title 'start f(x)' with li dt 2 lw 2,\
+p[1]*p[2]*x**p[3]/(1.0+p[2]*x**p[3])+p[4]*p[5]*x**p[6]/(1.0+p[5]*x**p[6]) title 'fit f(x)' with li lw 2,\
+'3-MP.dat' us 1:2 title 'raw data' with po pt 5 ps 0.5

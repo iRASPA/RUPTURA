@@ -1,0 +1,27 @@
+SimulationType           Fitting
+
+DisplayName              MAF-X8
+ColumnPressure           3
+ColumnLoading            8
+PressureScale            log
+
+Component 0 MoleculeName               o-xylene
+            FileName                   Results.dat-MAF-x8-P1-Repeat-433K-o-xylene
+            NumberOfIsothermSites      3
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+
+Component 1 MoleculeName               m-xylene
+            FileName                   Results.dat-MAF-x8-P1-Repeat-433K-m-xylene
+            NumberOfIsothermSites      3
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+
+Component 2 MoleculeName               p-xylene
+            FileName                   Results.dat-MAF-x8-P1-Repeat-433K-p-xylene
+            NumberOfIsothermSites      3
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0

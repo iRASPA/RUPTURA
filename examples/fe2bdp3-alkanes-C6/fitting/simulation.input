@@ -1,0 +1,12 @@
+SimulationType           Fitting
+
+DisplayName              CoBDP
+ColumnPressure           3
+ColumnLoading            6
+PressureScale            log
+
+Component 0 MoleculeName               22DMB
+            FileName                   Results.dat-fe2bdp3-433K-22dmC4
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0

@@ -1,0 +1,11 @@
+SimulationType           Fitting
+
+DisplayName              BEA
+ColumnPressure           3
+ColumnLoading            8
+PressureScale            log
+
+Component 0 MoleculeName               nC7
+            FileName                   Results.dat-BEA-Repeat-552K-nC7
+            NumberOfIsothermSites      1
+            Toth                       0.0 0.0 0.0

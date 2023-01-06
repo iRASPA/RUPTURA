@@ -1,0 +1,16 @@
+# ==============================================================
+# Fitting Result: R^2 = 0.998817
+# ==============================================================
+# Model name: Langmuir Isotherm
+#
+#                             (k * P)    
+# Isotherm Form: n(P) = q * -----------  
+#                           1 + (k * P)  
+#
+# Henry Coefficient: q * k
+# Saturation Loading: q
+#
+# Short name & Parameters:
+langmuir
+q  1.18629
+k  5.58049e-05

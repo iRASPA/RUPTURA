@@ -1,0 +1,55 @@
+SimulationType           Breakthrough
+
+// Column settings
+DisplayName              MIL-47
+Temperature              443.0           // [K]
+ColumnVoidFraction       0.4             // [-]
+ParticleDensity          1000.36         // [kg/m^3]
+TotalPressure            2.5e6           // [Pa]
+PressureGradient         0.0             // [Pa/m]
+ColumnEntranceVelocity   0.1             // [m/s]
+ColumnLength             0.3             // [m]
+
+// Run settings
+NumberOfTimeSteps       auto
+PrintEvery              10000
+WriteEvery              10000
+TimeStep                0.0005           // [s]
+NumberOfGridPoints      100
+
+Component 0 MoleculeName               Helium
+            GasPhaseMolFraction        0.96    // [-]
+            CarrierGas                 yes
+
+Component 1 MoleculeName               o-xylene
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        2.8  5.03e-3  1.08
+            Langmuir-Freundlich        0.8  3.78e-4  0.8
+
+Component 2 MoleculeName               m-xylene
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        2.6  2.48e-3  1.1 
+            Langmuir-Freundlich        0.8  3.86e-5  0.9
+
+Component 3 MoleculeName               p-xylene
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        2.8  3.22e-3  1.07
+            Langmuir-Freundlich        0.8  3.23e-5  0.9
+
+Component 4 MoleculeName               ethylbenzene
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.9  3.94e-4  0.62
+            Langmuir-Freundlich        2.2  4.73e-3  1.05
+

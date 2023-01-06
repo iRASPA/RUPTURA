@@ -1,0 +1,29 @@
+set encoding utf8
+set xlabel 'Total bulk fluid phase fugacity, {/Helvetica-Italic f} / Pa' font "Helvetica,18"
+set ylabel 'Absolute loading, {/Helvetica-Italic q}_i' offset 0.0,0 font "Helvetica,18"
+set bmargin 4
+set key top left samplen 2.5 height 0.5 spacing 1.5 font "Helvetica, 9" maxcolumns 2
+set log x
+set format x "10^{%T}"
+set xrange[0.1:]
+set key title "MAF-6 {/:Italic T}=298 K"
+set output 'mixture_prediction.pdf'
+set term pdf color solid
+set linetype 1 pt 5 ps 0.5 lw 2 lc rgb '0xee0000'
+set linetype 2 pt 7 ps 0.5 lw 2 lc rgb '0x008b00'
+set linetype 3 pt 9 ps 0.5 lw 2 lc rgb '0x0000cd'
+set linetype 4 pt 11 ps 0.5 lw 2 lc rgb '0xff3fb3'
+set linetype 5 pt 13 ps 0.5 lw 2 lc rgb '0x00cdcd'
+set linetype 6 pt 15 ps 0.5 lw 2 lc rgb '0xcd9b1d'
+set linetype 7 pt  4 ps 0.5 lw 2 lc rgb '0x8968ed'
+set linetype 8 pt  6 ps 0.5 lw 2 lc rgb '0x8b8b83'
+set linetype 9 pt  8 ps 0.5 lw 2 lc rgb '0x00bb00'
+set linetype 10 pt 10 ps 0.5 lw 2 lc rgb '0x1e90ff'
+set linetype 11 pt 12 ps 0.5 lw 2 lc rgb '0x8b2500'
+set linetype 12 pt 14 ps 0.5 lw 2 lc rgb '0x000000'
+plot \
+   "component_0_22DMB.data" us ($1):($3) title "22DMB-IAST" w l lw 2 lt 1,\
+   "component_1_23DMB.data" us ($1):($3) title "23DMB-IAST" w l lw 2 lt 2,\
+   "binary-mixures-298K_muVTMC/22DMB-23DMB.dat" us ($1*1000):2 title "22DMB-{/Helvetica-Italic {/Symbol m}VT}MC" w p pt 8 ps 1.5 lt 1,\
+   "binary-mixures-298K_muVTMC/22DMB-23DMB.dat" us ($1*1000):3 title "23DMB-{/Helvetica-Italic {/Symbol m}VT}MC" w p pt 8 ps 1.5 lt 2 
+    

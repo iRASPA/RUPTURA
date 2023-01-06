@@ -1,0 +1,12 @@
+SimulationType           Fitting
+
+DisplayName              CoBDP
+ColumnPressure           3
+ColumnLoading            6
+PressureScale            log
+
+Component 0 MoleculeName               nC6
+            FileName                   Results.dat-CoBDP-433K-nC6
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0

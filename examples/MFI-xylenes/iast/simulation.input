@@ -1,0 +1,32 @@
+SimulationType           MixturePrediction
+
+DisplayName              MFI
+Temperature              443.0   // [K]
+PressureStart            1e-4    // lowest pressure
+PressureEnd              1e7     // highest pressure
+NumberOfPressurePoints   100     // number of points equally spaced in log-scale or linear scale
+PressureScale            log     // [log, or linear]
+
+Component 0 MoleculeName               o-xylene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      1
+            Langmuir                   4.0  20.0
+
+Component 1 MoleculeName               m-xylene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      2
+            Langmuir                   4.0  87.5 
+            Langmuir                   1.8  2.3e-5
+
+Component 2 MoleculeName               p-xylene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        4.0  29.6     1.04
+            Langmuir-Freundlich        2.2  1.05e-3  0.75
+
+Component 3 MoleculeName               ethylbenzene
+            GasPhaseMolFraction        0.25    // [-]
+            NumberOfIsothermSites      2
+            Langmuir                   4.0  103.0
+            Langmuir                   2.0  2.99e-7
+

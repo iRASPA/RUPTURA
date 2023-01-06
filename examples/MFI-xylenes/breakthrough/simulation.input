@@ -1,0 +1,54 @@
+SimulationType           Breakthrough
+
+// Column settings
+DisplayName              MFI
+Temperature              443.0           // [K]
+ColumnVoidFraction       0.4             // [-]
+ParticleDensity          1785.22         // [kg/m^3]
+TotalPressure            2.5e6           // [Pa]
+PressureGradient         0.0             // [Pa/m]
+ColumnEntranceVelocity   0.1             // [m/s]
+ColumnLength             0.3             // [m]
+
+// Run settings
+NumberOfTimeSteps       auto
+PrintEvery              10000
+WriteEvery              10000
+TimeStep                0.0005           // [s]
+NumberOfGridPoints      100
+
+Component 0 MoleculeName               Helium
+            GasPhaseMolFraction        0.96    // [-]
+            CarrierGas                 yes
+
+Component 1 MoleculeName               o-xylene
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      1
+            Langmuir                   4.0  20.0
+
+Component 2 MoleculeName               m-xylene
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir                   4.0  87.5 
+            Langmuir                   1.8  2.3e-5
+
+Component 3 MoleculeName               p-xylene
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        4.0  29.6     1.04
+            Langmuir-Freundlich        2.2  1.05e-3  0.75
+
+Component 4 MoleculeName               ethylbenzene
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir                   4.0  103.0   
+            Langmuir                   2.0  2.99e-7
+

@@ -1,0 +1,3 @@
+Ostrich Error Report for Processor 0 
+A total of 0 errors and/or warnings were reported
+NO ERROR                   : No messages 

@@ -1,0 +1,58 @@
+SimulationType           MixturePrediction
+
+DisplayName              Landa2012 
+Temperature              313.0      // [K]
+PressureStart            300e3      // lowest pressure
+PressureEnd              300e3     // highest pressure
+NumberOfPressurePoints   1          // number of points equally spaced in log-scale or linear scale
+PressureScale            linear     // [log, or linear]
+
+Component 0 MoleculeName               Component-1
+            GasPhaseMolFraction        0.1     // [-]
+            NumberOfIsothermSites      1
+            O'Brian&Myers              5.0 0.01e-3 1.2
+
+Component 1 MoleculeName               Component-2
+            GasPhaseMolFraction        0.1    // [-]
+            NumberOfIsothermSites      1
+            O'Brian&Myers              3.0 0.006e-3 1.1
+
+Component 2 MoleculeName               Component-3
+            GasPhaseMolFraction        0.1     // [-]
+            NumberOfIsothermSites      1
+            O'Brian&Myers              4.0 0.0009e-3 0.8
+
+Component 3 MoleculeName               Component-4
+            GasPhaseMolFraction        0.2     // [-]
+            NumberOfIsothermSites      1
+            O'Brian&Myers              2.0 0.01e-3 1.2
+
+Component 4 MoleculeName               Component-5
+            GasPhaseMolFraction        0.1     // [-]
+            NumberOfIsothermSites      1
+            O'Brian&Myers              3.5 0.003e-3 1.0
+
+Component 5 MoleculeName               Component-6
+            GasPhaseMolFraction        0.05    // [-]
+            NumberOfIsothermSites      1
+            O'Brian&Myers              4.0 0.001e-3 1.1
+
+Component 6 MoleculeName               Component-7
+            GasPhaseMolFraction        0.05    // [-]
+            NumberOfIsothermSites      1
+            O'Brian&Myers              2.0 0.015e-3 1.2
+
+Component 7 MoleculeName               Component-8
+            GasPhaseMolFraction        0.05    // [-]
+            NumberOfIsothermSites      1
+            O'Brian&Myers              2.5 0.001e-3 1.15
+
+Component 8 MoleculeName               Component-9
+            GasPhaseMolFraction        0.05    // [-]
+            NumberOfIsothermSites      1
+            O'Brian&Myers              4.0 0.0001e-3 1.0
+
+Component 9 MoleculeName               Component-10
+            GasPhaseMolFraction        0.2     // [-]
+            NumberOfIsothermSites      1
+            O'Brian&Myers              5.5 0.006e-3 1.0

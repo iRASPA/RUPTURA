@@ -1,0 +1,19 @@
+SimulationType           MixturePrediction
+
+DisplayName              Silicalite 
+Temperature              313.0      // [K]
+PressureStart            0.0        // lowest pressure
+PressureEnd              5e5        // highest pressure
+NumberOfPressurePoints   100        // number of points equally spaced in log-scale or linear scale
+PressureScale            linear     // [log, or linear]
+MixturePredictionMethod  EI
+
+Component 0 MoleculeName               CO2
+            GasPhaseMolFraction        0.1     // [-]
+            NumberOfIsothermSites      1
+            Langmuir                   2.858 1.089e-5
+
+Component 1 MoleculeName               N2
+            GasPhaseMolFraction        0.9     // [-]
+            NumberOfIsothermSites      1
+            Langmuir                   2.094 0.111e-5

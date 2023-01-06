@@ -1,0 +1,22 @@
+SimulationType           MixturePrediction
+
+DisplayName              MAF-6
+Temperature              298.0   // [K]
+PressureStart            1e-1    // lowest pressure
+PressureEnd              1e6     // highest pressure
+NumberOfPressurePoints   256     // number of points equally spaced in log-scale or linear scale
+PressureScale            log     // [log, or linear]
+
+Component 0 MoleculeName               22DMB
+            GasPhaseMolFraction        1.0    // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        2.88752 1.14774e-07 2.25341
+            Langmuir-Freundlich        0.938131 0.0266853 1.13388
+
+Component 1 MoleculeName               23DMB
+            GasPhaseMolFraction        1.0    // [-]
+            NumberOfIsothermSites      3
+            Langmuir-Freundlich        3.13648 1.37996e-08 3.11688
+            Langmuir-Freundlich        0.00385344 4.51394 10.1938
+            Langmuir-Freundlich        0.875397 0.105484 1.24258
+

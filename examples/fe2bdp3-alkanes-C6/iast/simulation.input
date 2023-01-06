@@ -1,0 +1,38 @@
+SimulationType           MixturePrediction
+
+DisplayName              CoBDP
+Temperature              443.0   // [K]
+PressureStart            1e2    // lowest pressure
+PressureEnd              1e6     // highest pressure
+NumberOfPressurePoints   100     // number of points equally spaced in log-scale or linear scale
+PressureScale            log     // [log, or linear]
+
+Component 0 MoleculeName               nC6
+            GasPhaseMolFraction        0.2     // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        1.1 2.14e-4 0.6
+            Langmuir-Freundlich        4.8 2.39e-5 1.35
+
+Component 1 MoleculeName               2MP
+            GasPhaseMolFraction        0.2     // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        1.4 1.68e-4 0.6
+            Langmuir-Freundlich        4.8 3.3e-5  1.26
+
+Component 2 MoleculeName               3MP
+            GasPhaseMolFraction        0.2     // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        1.75 1.14e-4 0.62
+            Langmuir-Freundlich        4.8  3.22e-5 1.24
+
+Component 3 MoleculeName               23DMB
+            GasPhaseMolFraction        0.2     // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        1.5  8.31e-5 0.63
+            Langmuir-Freundlich        4.8  5.46e-5 1.13
+
+Component 4 MoleculeName               22DMB
+            GasPhaseMolFraction        0.2     // [-]
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        1.74 5.65e-6 0.72
+            Langmuir-Freundlich        4.8  4.3e-5  1.04

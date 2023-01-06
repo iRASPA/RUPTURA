@@ -1,0 +1,12 @@
+SimulationType           Fitting
+
+DisplayName              MIL-47
+ColumnPressure           3
+ColumnLoading            8
+PressureScale            log
+
+Component 0 MoleculeName               p-xylene
+            FileName                   Results.dat-MIL-47-P1-Repeat-433K-p-xylene
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0

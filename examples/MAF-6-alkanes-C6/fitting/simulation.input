@@ -1,0 +1,37 @@
+SimulationType           Fitting
+
+DisplayName              MAF-6
+ColumnPressure           1
+ColumnLoading            2
+PressureScale            log
+
+Component 0 MoleculeName               nC6
+            FileName                   C6.dat
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+
+Component 1 MoleculeName               2MP
+            FileName                   2-MP.dat
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+
+Component 2 MoleculeName               22DMB
+            FileName                   22-DMB.dat
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+
+Component 3 MoleculeName               23DMB
+            FileName                   23-DMB.dat
+            NumberOfIsothermSites      3
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0
+
+Component 4 MoleculeName               3MP
+            FileName                   3-MP.dat
+            NumberOfIsothermSites      2
+            Langmuir-Freundlich        0.0 0.0 0.0
+            Langmuir-Freundlich        0.0 0.0 0.0

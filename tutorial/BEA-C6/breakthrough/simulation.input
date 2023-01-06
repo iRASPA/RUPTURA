@@ -1,0 +1,51 @@
+SimulationType           Breakthrough
+
+// Column settings
+DisplayName              BEA
+Temperature              552.0           // [K]
+ColumnVoidFraction       0.4             // [-]
+ParticleDensity          1508.52         // [kg/m^3]
+TotalPressure            1.2e5           // [Pa]
+PressureGradient        -1000.0          // [Pa/m] 
+ColumnEntranceVelocity   0.019           // [m/s]
+ColumnLength             0.1             // [m]
+
+// Run settings
+NumberOfTimeSteps       auto
+PrintEvery              10000
+WriteEvery              5000
+TimeStep                0.001
+NumberOfGridPoints      30
+MixturePredictionMethod EI
+
+Component 0 MoleculeName               Helium
+            GasPhaseMolFraction        0.96    // [-]
+            CarrierGas                 yes
+
+Component 1 MoleculeName               nC6
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      1
+            Langmuir                   1.393 3.307e-05
+
+Component 2 MoleculeName               C5m3
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      1
+            Langmuir                   1.559 1.809e-05
+
+Component 3 MoleculeName               C4m2m2
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      1
+            Langmuir                   1.714 5.451e-06
+
+Component 4 MoleculeName               C4m2m3
+            GasPhaseMolFraction        0.01    // [-]
+            MassTransferCoefficient    0.06    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      1
+            Langmuir                   1.678 1.522e-05
