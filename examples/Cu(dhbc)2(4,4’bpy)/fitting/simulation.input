@@ -1,0 +1,11 @@
+SimulationType           Fitting
+
+DisplayName              Cu(dhbc)2(4,4’bpy)
+ColumnPressure           1
+ColumnLoading            2
+PressureScale            normal
+
+Component 0 MoleculeName               CO2
+            FileName                   CO2.data
+            NumberOfIsothermSites      1
+            Bingel&Walton              0.0 0.0 0.0

@@ -112,6 +112,14 @@ void Isotherm::print() const
       std::cout << "        c:     " << parameters[2] << "\n";
       break;
     }
+    case Isotherm::Type::BingelWalton:
+    {
+      std::cout << "    Bingel&Walton isotherm\n";
+      std::cout << "        q_sat: " << parameters[0] << "\n";
+      std::cout << "        a:     " << parameters[1] << "\n";
+      std::cout << "        b:     " << parameters[2] << "\n";
+      break;
+    }
     default:
       break;
   }
@@ -182,7 +190,12 @@ bool Isotherm::isUnphysical() const
     }
     case Isotherm::Type::Temkin:
     {
-      if(parameters[0] < 0.0 || parameters[1] < 0.0 || parameters[2] < 0.0) return true;
+      if(parameters[0] <= 0.0 || parameters[1] < 0.0 || parameters[2] < 0.0) return true;
+      return false;
+    }
+    case Isotherm::Type::BingelWalton:
+    {
+      if(parameters[0] <= 0.0 || (parameters[1] + parameters[2]) < 1e-3) return true;
       return false;
     }
     default:
@@ -280,6 +293,13 @@ void Isotherm::randomize(double maximumLoading)
       parameters[2] = 0.1 + 2.0 * RandomNumber::Uniform();
       break;
     }
+    case Isotherm::Type::BingelWalton:
+    {
+      parameters[0] = 1.1 * maximumLoading * RandomNumber::Uniform();
+      parameters[1] = 0.1 + 2.0 * RandomNumber::Uniform();
+      parameters[2] = 0.1 + 2.0 * RandomNumber::Uniform();
+      break;
+    }
     default:
       throw std::runtime_error("Error: unkown isotherm type");
   }
@@ -362,6 +382,12 @@ std::string Isotherm::gnuplotFunctionString(char c, size_t i) const
     {
       snprintf(stringBuffer, 1024, "%c[%ld]*(%c[%ld]*x/(1.0+%c[%ld]*x))+%c[%ld]*%c[%ld]*((%c[%ld]*x/(1.0+%c[%ld]*x))**2)*(%c[%ld]*x/(1.0+%c[%ld]*x)-1.0)", 
           c, i, c, i+1, c, i+1, c, i, c, i+2, c, i+1, c, i+1, c, i+1, c, i+1);
+      return stringBuffer;
+    }
+    case Isotherm::Type::BingelWalton:
+    {
+      snprintf(stringBuffer, 1024, "%c[%ld]*(1.0-exp(-(%c[%ld]+%c[%ld])*x))/(1.0+(%c[%ld]/%c[%ld])*exp(-(%c[%ld]+%c[%ld])*x))", 
+              c, i, c, i+1, c, i+2, c, i+2, c, i+1, c, i +1, c, i+2);
       return stringBuffer;
     }
     default:

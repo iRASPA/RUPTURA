@@ -42,7 +42,8 @@ struct Isotherm
     Unilan = 9,
     OBrien_Myers = 10,
     Quadratic = 11,
-    Temkin = 12
+    Temkin = 12,
+    BingelWalton = 13
   };
 
   Isotherm(Isotherm::Type type, const std::vector<double> &values, size_t numberOfValues);
@@ -121,6 +122,11 @@ struct Isotherm
         double temp = parameters[1] * pressure;
         double temp1 = temp / (1.0 + temp);
         return parameters[0] * (temp1 + parameters[2] * temp1 * temp1 * (temp1 - 1.0));
+      }
+      case Isotherm::Type::BingelWalton:
+      {
+        return parameters[0] * (1.0 - std::exp(-(parameters[1] + parameters[2]) * pressure)) / 
+               (1.0 + (parameters[2] / parameters[1]) * std::exp(-(parameters[1] + parameters[2]) * pressure));
       }
       default:
         throw std::runtime_error("Error: unkown isotherm type");
@@ -227,6 +233,46 @@ struct Isotherm
         double temp = parameters[1] * pressure;
         double temp1 = temp / (1.0 + temp);
         return parameters[0] * (std::log(1.0 + temp) - 0.5 * parameters[2] * temp1 * temp1);
+      }
+      case Isotherm::Type::BingelWalton:
+      {
+        double start = 1e-14;
+        size_t max_steps = 100;
+        double acc = 1e-6;
+
+        // Romberg integration: https://en.wikipedia.org/wiki/Romberg%27s_method
+        std::vector<double> R1(max_steps), R2(max_steps); // buffers
+        double *Rp = &R1[0], *Rc = &R2[0]; // Rp is previous row, Rc is current row
+        double h = pressure - start; //step size
+        Rp[0] = (value(start)/start + value(pressure)/pressure)*h*0.5; // first trapezoidal step
+
+        for (size_t i = 1; i < max_steps; ++i)
+        {
+          h /= 2.0;
+          double c = 0;
+          size_t ep = 1 << (i-1); //2^(n-1)
+          for (size_t j = 1; j <= ep; ++j)
+          {
+             c += value(start + (2*j-1)*h) / (start + (2*j-1)*h);
+          }
+          Rc[0] = h*c + 0.5*Rp[0]; // R(i,0)
+
+          for (size_t j = 1; j <= i; ++j)
+          {
+             double n_k = std::pow(4, j);
+             Rc[j] = (n_k*Rc[j-1] - Rp[j-1]) / (n_k-1); // compute R(i,j)
+          }
+
+          if (i > 1 && std::fabs(Rp[i-1]-Rc[i]) < acc)
+          {
+            return Rc[i];
+          }
+
+          double *rt = Rp;
+          Rp = Rc;
+          Rc = rt;
+        }
+        return Rp[max_steps-1]; // return our best guess
       }
       default:
         throw std::runtime_error("Error: unkown isotherm type");

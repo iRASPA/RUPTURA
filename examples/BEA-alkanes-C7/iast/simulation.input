@@ -1,6 +1,6 @@
 SimulationType           MixturePrediction
 
-ColumnName               BEA
+DisplayName              BEA
 Temperature              552.0   // [K]
 PressureStart            1e3      // lowest pressure
 PressureEnd              1e7     // highest pressure

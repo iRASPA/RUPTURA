@@ -1,0 +1,18 @@
+SimulationType           MixturePrediction
+
+DisplayName              Cu(dhbc)2(4,4’bpy)
+Temperature              298.0   // [K]
+PressureStart            1.0     // lowest pressure
+PressureEnd              8e6     // highest pressure
+NumberOfPressurePoints   50      // number of points equally spaced in log-scale or linear scale
+PressureScale            linear  // [log, or linear]
+
+Component 0 MoleculeName               CO2
+            GasPhaseMolFraction        0.5     // [-]
+            NumberOfIsothermSites      1
+            Bingel&Walton              2.77 9.695e-6 -10.05e-6
+
+Component 1 MoleculeName               O2
+            GasPhaseMolFraction        0.5     // [-]
+            NumberOfIsothermSites      1
+            Bingel&Walton              1.85 8.094e-11 2.214e-6

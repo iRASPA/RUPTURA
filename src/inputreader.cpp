@@ -618,6 +618,18 @@ InputReader::InputReader(const std::string fileName):
         components[numberOfComponents - 1].isotherm.add(isotherm);
         continue;
       }
+      if (caseInSensStringCompare(keyword, "Bingel&Walton"))
+      {
+        std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
+        if(values.size() < 3)
+        {
+          throw std::runtime_error("Error: Bingel&Walton requires three parameters");
+        }
+        values.resize(3);
+        Isotherm isotherm = Isotherm(Isotherm::Type::BingelWalton, values, 3);
+        components[numberOfComponents - 1].isotherm.add(isotherm);
+        continue;
+      }
 
       if(!(startsWith(keyword, "//") || startsWith(keyword, "#")))
       {
