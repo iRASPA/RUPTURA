@@ -182,6 +182,21 @@ void Breakthrough::run()
 
   std::ofstream movieStream("column.data");
 
+    size_t column_nr = 1;
+  movieStream << "# column " << column_nr++ << ": z  (column position)" << std::endl;
+  movieStream << "# column " << column_nr++ << ": V  (velocity)" << std::endl;
+  movieStream << "# column " << column_nr++ << ": Pt (total pressure)" << std::endl;
+  for(size_t j = 0; j < Ncomp; ++j)
+  {
+    movieStream << "# column " << column_nr++ << ": component " << j << " Q     (loading) " << std::endl;
+    movieStream << "# column " << column_nr++ << ": component " << j << " Qeq   (equilibrium loading)" << std::endl;
+    movieStream << "# column " << column_nr++ << ": component " << j << " P     (partial pressure)" << std::endl;
+    movieStream << "# column " << column_nr++ << ": component " << j << " Pnorm (normalized partial pressure)" << std::endl;
+    movieStream << "# column " << column_nr++ << ": component " << j << " Dpdt  (derivative P with t)" << std::endl;
+    movieStream << "# column " << column_nr++ << ": component " << j << " Dqdt  (derivative Q with t)" << std::endl;
+  }
+
+
   for(size_t step = 0; (step < Nsteps || autoSteps); ++step)
   {
     double t = static_cast<double>(step) * dt;
