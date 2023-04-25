@@ -292,8 +292,7 @@ std::pair<size_t, size_t> MixturePrediction::computeFastIAST(const std::vector<d
 
   for(size_t i = 0; i < Nsorted; ++i)
   {
-    Xi[sortedComponents[i].id] = Yi[sortedComponents[i].id] * P / pstar[i];
-
+    Xi[sortedComponents[i].id] = Yi[sortedComponents[i].id] * P / std::max(pstar[i], 1e-15);
   }
   if(numberOfCarrierGases > 0)
   {
@@ -493,7 +492,7 @@ std::pair<size_t, size_t> MixturePrediction::computeFastSIAST(size_t site,
 
   for(size_t i = 0; i < Nsorted; ++i)
   {
-    Xi[sortedComponents[i].id] = Yi[sortedComponents[i].id] * P / pstar[i];
+    Xi[sortedComponents[i].id] = Yi[sortedComponents[i].id] * P / std::max(pstar[i], 1e-15);
   }
   if(numberOfCarrierGases > 0)
   {

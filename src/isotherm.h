@@ -250,7 +250,7 @@ struct Isotherm
         {
           h /= 2.0;
           double c = 0;
-          size_t ep = 1 << (i-1); //2^(n-1)
+          size_t ep = size_t{1} << (i-1); //2^(n-1)
           for (size_t j = 1; j <= ep; ++j)
           {
              c += value(start + static_cast<double>(2*j-1)*h) / (start + static_cast<double>(2*j-1)*h);
