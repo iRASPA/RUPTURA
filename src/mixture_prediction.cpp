@@ -206,6 +206,7 @@ std::pair<size_t, size_t> MixturePrediction::computeFastIAST(const std::vector<d
   }
 
   double error = 1.0;
+  double sum_xi = 0.0;
   do
   {
     // compute G
@@ -271,6 +272,12 @@ std::pair<size_t, size_t> MixturePrediction::computeFastIAST(const std::vector<d
       psi[i] = sortedComponents[i].isotherm.psiForPressure(pstar[i]);
     }
 
+    sum_xi = 0.0;
+    for(size_t i = 0; i < Nsorted; ++i)
+    {
+      sum_xi += Yi[sortedComponents[i].id] * P / std::max(pstar[i], 1e-15);
+    }
+
     double avg = std::accumulate(std::begin(psi), std::end(psi), 0.0) / static_cast<double>(psi.size());
 
     double accum = 0.0;
@@ -282,7 +289,7 @@ std::pair<size_t, size_t> MixturePrediction::computeFastIAST(const std::vector<d
 
     numberOfIASTSteps++;
   }
-  while(error > tiny);
+  while(!(((error < tiny) && (std::fabs(sum_xi - 1.0) < 1e-10)) || (numberOfIASTSteps >= 50) ));
 
 
   for(size_t i = 0; i < Nsorted; ++i)
@@ -406,6 +413,7 @@ std::pair<size_t, size_t> MixturePrediction::computeFastSIAST(size_t site,
   }
 
   double error = 1.0;
+  double sum_xi = 1.0;
   do
   {
     // compute G
@@ -471,6 +479,12 @@ std::pair<size_t, size_t> MixturePrediction::computeFastSIAST(size_t site,
       psi[i] = sortedComponents[i].isotherm.psiForPressure(site, pstar[i]);
     }
 
+    sum_xi = 0.0;
+    for(size_t i = 0; i < Nsorted; ++i)
+    {
+      sum_xi += Yi[sortedComponents[i].id] * P / std::max(pstar[i], 1e-15);
+    }
+
     double avg = std::accumulate(std::begin(psi), std::end(psi), 0.0) / static_cast<double>(psi.size());
 
     double accum = 0.0;
@@ -482,7 +496,7 @@ std::pair<size_t, size_t> MixturePrediction::computeFastSIAST(size_t site,
 
     numberOfIASTSteps++;
   }
-  while(error > tiny);
+  while(!(((error < tiny) && (std::fabs(sum_xi - 1.0) < 1e-10)) || (numberOfIASTSteps >= 50) ));
 
 
   for(size_t i = 0; i < Nsorted; ++i)
