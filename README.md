@@ -43,7 +43,8 @@ If you use this software for scientific publications, please cite:<br>
 Theory Computations, and Fitting of Isotherm Models"<br>
 S. Sharma, S. Balestra, R. Baur, U. Agarwal, E. Zuidema, M. Rigutto,
 S. Calero, T.J.H. Vlugt, and D. Dubbeldam, 
-Molecular Simulation Journal, 2023
+Molecular Simulation Journal, 49(9), 2023
+https://www.tandfonline.com/doi/full/10.1080/08927022.2023.2202757
 
 Authors
 =======
