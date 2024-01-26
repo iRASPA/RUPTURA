@@ -52,7 +52,7 @@ struct Isotherm
   std::vector<double> parameters;
   size_t numberOfParameters;
 
-  void print() const;
+  std::string repr() const;
 
   inline double value(double pressure) const
   {

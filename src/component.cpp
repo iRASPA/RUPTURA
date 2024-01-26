@@ -1,20 +1,20 @@
 #include "component.h"
 
-void Component::print(size_t i) const
+std::string Component::repr() const
 {
-  std::cout << "Component " << i << " id: " << id << " [" << name << "]:\n";
-  if(isCarrierGas)
+  std::string s;
+  s += "Component id: " + std::to_string(id) + " [" + name + "]:\n";
+  if (isCarrierGas)
   {
-    std::cout << "    carrier-gas\n";
-
-    isotherm.print();
+    s += "    carrier-gas\n";
+    s += isotherm.repr();
   }
-  std::cout << "    mol-fraction in the gas:   " << Yi0 << " [-]\n";
-  if(!isCarrierGas)
-  {
-    std::cout << "    mass-transfer coefficient: " << Kl << " [1/s]\n";
-    std::cout << "    diffusion coefficient:     " << D << " [m^2/s]\n";
-
-    isotherm.print();
-  }
+    s += "    mol-fraction in the gas:   " + std::to_string(Yi0) + " [-]\n";
+    if (!isCarrierGas)
+    {
+      s += "    mas-transfer coefficient: " + std::to_string(Kl) + " [1/s]\n";
+      s += "    diffusion coefficient:     " + std::to_string(D) + " [m^2/s]\n";
+      s += isotherm.repr();
+    }
+    return s;
 }

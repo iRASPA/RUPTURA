@@ -25,7 +25,7 @@ class MixturePrediction
 
     MixturePrediction(const InputReader &inputreader);
 
-    void print() const;
+    std::string repr() const;
     void run();
     void createPureComponentsPlotScript();
     void createMixturePlotScript();

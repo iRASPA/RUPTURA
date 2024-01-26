@@ -120,7 +120,7 @@ void Fitting::readData(size_t ID)
   for(size_t i = 0; i < Ncomp; ++i)
   {
     std::cout << "Number of isotherm parameters: " << isotherms[i].numberOfParameters << std::endl;
-    isotherms[i].print();
+    std::cout << isotherms[i].repr();
   }
 }
 
@@ -132,7 +132,7 @@ void Fitting::run()
     readData(i);
     const DNA bestCitizen = fit(i);
     const DNA optimizedBestCitizen = simplex(bestCitizen, 1.0);
-    optimizedBestCitizen.phenotype.print();
+    std::cout << optimizedBestCitizen.phenotype.repr();
     createPlotScripts(optimizedBestCitizen, i);
   }
   createPlotScript();

@@ -20,7 +20,7 @@ int main(void)
       {
         Breakthrough breakthrough(reader);
 
-        breakthrough.print();
+        std::cout << breakthrough.repr();
         breakthrough.initialize();
         breakthrough.createPlotScript();
         breakthrough.createMovieScripts();
@@ -31,13 +31,13 @@ int main(void)
       {
         MixturePrediction mixture(reader);
 
-        mixture.print();
+        std::cout << mixture.repr();
         mixture.run();
         mixture.createPureComponentsPlotScript();
         mixture.createMixturePlotScript();
         mixture.createMixtureAdsorbedMolFractionPlotScript();
         mixture.createPlotScript();
-        mixture.print();
+        std::cout << mixture.repr();
         break;
       }
       case InputReader::SimulationType::Fitting:

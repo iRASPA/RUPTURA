@@ -11,7 +11,7 @@ struct Breakthrough
   public:
     Breakthrough(const InputReader &inputreader);
 
-    void print() const;
+    std::string repr() const;
     void initialize();
     void run();
 

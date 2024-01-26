@@ -16,6 +16,6 @@ struct Component
   double Kl;                  // masstransfer coefficient [1/s]
   double D;                   // axial dispersion coefficient [m^2/s]
   bool isCarrierGas{ false }; // whether or not this is the carrier-gas
-                                  
-  void print(size_t i) const;
+
+  std::string repr() const;
 };

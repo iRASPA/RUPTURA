@@ -476,42 +476,43 @@ void Breakthrough::computeVelocity()
   Vnew[Ngrid] = Vnew[Ngrid-1] + dx * (sum - Vnew[Ngrid - 1] * dptdx) / Pt[Ngrid];
 }
 
-void Breakthrough::print() const
+std::string Breakthrough::repr() const
 {
-  std::cout << "Column properties\n";
-  std::cout << "=======================================================\n";
-  std::cout << "Display-name:                          " << displayName << "\n";
-  std::cout << "Temperature:                           " << T << " [K]\n";
-  std::cout << "Column length:                         " << L << " [m]\n";
-  std::cout << "Column void-fraction:                  " << epsilon << " [-]\n";
-  std::cout << "Particle density:                      " << rho_p << " [kg/m^3]\n";
-  std::cout << "Total pressure:                        " << p_total << " [Pa]\n";
-  std::cout << "Pressure gradient:                     " << dptdx << " [Pa/m]\n";
-  std::cout << "Column entrance interstitial velocity: " << v_in << " [m/s]\n";
-  std::cout << "\n\n";
+  std::string s;
+  s += "Column properties\n";
+  s += "=======================================================\n";
+  s += "Display-name:                          " + displayName + "\n";
+  s += "Temperature:                           " + std::to_string(T) + " [K]\n";
+  s += "Column length:                         " + std::to_string(L) + " [m]\n";
+  s += "Column void-fraction:                  " + std::to_string(epsilon) + " [-]\n";
+  s += "Particle density:                      " + std::to_string(rho_p) + " [kg/m^3]\n";
+  s += "Total pressure:                        " + std::to_string(p_total) + " [Pa]\n";
+  s += "Pressure gradient:                     " + std::to_string(dptdx) + " [Pa/m]\n";
+  s += "Column entrance interstitial velocity: " + std::to_string(v_in) + " [m/s]\n";
+  s += "\n\n";
 
-  std::cout << "Breakthrough settings\n";
-  std::cout << "=======================================================\n";
-  std::cout << "Number of time steps:          " << Nsteps << "\n";
-  std::cout << "Print every step:              " << printEvery << "\n";
-  std::cout << "Write data every step:         " << writeEvery << "\n";
-  std::cout << "\n\n";
+  s += "Breakthrough settings\n";
+  s += "=======================================================\n";
+  s += "Number of time steps:          " + std::to_string(Nsteps) + "\n";
+  s += "Print every step:              " + std::to_string(printEvery) + "\n";
+  s += "Write data every step:         " + std::to_string(writeEvery) + "\n";
+  s += "\n\n";
 
-  std::cout << "Integration details\n";
-  std::cout << "=======================================================\n";
-  std::cout << "Time step:                     " << dt << " [s]\n";
-  std::cout << "Number of column grid points:  " << Ngrid << "\n";
-  std::cout << "Column spacing:                " << dx << " [m]\n";
-  std::cout << "\n\n";
+  s += "Integration details\n";
+  s += "=======================================================\n";
+  s += "Time step:                     " + std::to_string(dt) + " [s]\n";
+  s += "Number of column grid points:  " + std::to_string(Ngrid) + "\n";
+  s += "Column spacing:                " + std::to_string(dx) + " [m]\n";
+  s += "\n\n";
 
-  std::cout << "Component data\n";
-  std::cout << "=======================================================\n";
-  std::cout << "maximum isotherm terms:        " << maxIsothermTerms << "\n";
+  s += "Component data\n";
+  s += "=======================================================\n";
+  s += "maximum isotherm terms:        " + std::to_string(maxIsothermTerms) + "\n";
   for(size_t i = 0; i < Ncomp; ++i)
   {
-    components[i].print(i);
-    std::cout << "\n";
+    s += components[i].repr() + "\n";
   }
+  return s;
 }
 
 void Breakthrough::createPlotScript()

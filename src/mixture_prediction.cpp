@@ -1054,15 +1054,15 @@ std::pair<size_t, size_t> MixturePrediction::computeSegratedExplicitIsotherm(siz
   return std::make_pair(1,1);
 }
 
-void MixturePrediction::print() const
+std::string MixturePrediction::repr() const
 {
-  std::cout << "Component data\n";
-  std::cout << "=======================================================\n";
-  std::cout << "maximum isotherm terms:        " << maxIsothermTerms << "\n";
+  std::string s;
+  s += "Component data\n";
+  s += "=======================================================\n";
+  s += "maximum isotherm terms:        " + std::to_string(maxIsothermTerms) + "\n";
   for(size_t i = 0; i < Ncomp; ++i)
   {
-    sortedComponents[i].print(i);
-    std::cout << "\n";
+    s += sortedComponents[i].repr(i) + "\n";
   }
 }
 

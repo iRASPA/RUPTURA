@@ -38,7 +38,6 @@ struct Fitting
   Fitting(const InputReader &inputreader);
 
   void readData(size_t ID);
-  void printSolution(size_t ID);
   void run();
   void createPlotScripts(const DNA &citizen, size_t ID);
   void createPlotScript();

@@ -4,13 +4,15 @@
 #include <sstream>
 #include <cmath>
 
-void MultiSiteIsotherm::print() const
+std::string MultiSiteIsotherm::repr() const
 {
-  std::cout << "    number of isotherm sites:  " << numberOfSites << "\n";
-  for(size_t i = 0; i < numberOfSites; ++i)
+  std::string s;
+  s += "    number of isotherm sites:  " + std::to_string(numberOfSites) + "\n";
+  for (size_t i = 0; i < numberOfSites; ++i)
   {
-    sites[i].print();
+    s += sites[i].repr();
   }
+  return s;
 }
 
 void MultiSiteIsotherm::add(const Isotherm &isotherm)
