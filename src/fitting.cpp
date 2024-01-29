@@ -999,30 +999,12 @@ std::vector<double> Fitting::compute(std::vector<std::pair<double, double>> data
     DNA optimizedBestCitizen = simplex(bestCitizen, 1.0);
 
     // save optimized params to component, insert in output array
-    std::vector<double> compParams = optimizedBestCitizen.phenotype.getParameters();
-    components[i].isotherm.setParameters(compParams);
-    output.insert(output.end(), compParams.begin(), compParams.end());
-
-    optimizedBestCitizen.phenotype.print();
-  }
-  return output;
-}
-
-py::array_t<double> Fitting::evaluate()
-{
-  // initialize numpy array
-  size_t Npress = rawData.size();
-  std::array<size_t, 2> shape{{Npress, Ncomp}};
-  py::array_t<double> output(shape);
-  double *data = output.mutable_data();
-
-  // add datapoints
-  for (size_t i = 0; i < Npress; i++)
-  {
-    for (size_t j = 0; j < Ncomp; j++)
+    for (size_t j = 0; j < isotherms[i].numberOfParameters; i++)
     {
-      data[i * Ncomp + j] = components[j].isotherm.value(rawData[i].first);
+      output.push_back(isotherms[i].parameters(j));
     }
+
+    std::cout << optimizedBestCitizen.phenotype.repr() << "\n";
   }
   return output;
 }
