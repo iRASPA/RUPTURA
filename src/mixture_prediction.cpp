@@ -35,32 +35,32 @@ std::pair<T,U> &operator+=(std::pair<T,U> & l, const std::pair<T,U> & r) {
     return l;
 }
 
-MixturePrediction::MixturePrediction(const InputReader &inputreader):
-                 displayName(inputreader.displayName),
-                 components(inputreader.components),
-                 sortedComponents(components),
-                 Ncomp(components.size()),
-                 Nsorted(components.size() - inputreader.numberOfCarrierGases),
-                 numberOfCarrierGases(inputreader.numberOfCarrierGases),
-                 carrierGasComponent(inputreader.carrierGasComponent),
-                 predictionMethod(PredictionMethod(inputreader.mixturePredictionMethod)),
-                 iastMethod(IASTMethod(inputreader.IASTMethod)),
-                 maxIsothermTerms(inputreader.maxIsothermTerms),
-                 segregatedSortedComponents(maxIsothermTerms, std::vector<Component>(components)),
-                 alpha1(Ncomp),
-                 alpha2(Ncomp),
-                 alpha_prod(Ncomp),
-                 x(Ncomp),
-                 pstar(Nsorted),
-                 psi(Nsorted),
-                 G(Nsorted),
-                 delta(Nsorted),
-                 Phi(Nsorted*Nsorted),
-                 temperature(inputreader.temperature),
-                 pressureStart(inputreader.pressureStart),
-                 pressureEnd(inputreader.pressureEnd),
-                 numberOfPressurePoints(inputreader.numberOfPressurePoints),
-                 pressureScale(PressureScale(inputreader.pressureScale))
+MixturePrediction::MixturePrediction(const InputReader &inputreader)
+    : maxIsothermTerms(inputreader.maxIsothermTerms),
+      displayName(inputreader.displayName),
+      components(inputreader.components),
+      sortedComponents(components),
+      Ncomp(components.size()),
+      Nsorted(components.size() - inputreader.numberOfCarrierGases),
+      numberOfCarrierGases(inputreader.numberOfCarrierGases),
+      carrierGasComponent(inputreader.carrierGasComponent),
+      predictionMethod(PredictionMethod(inputreader.mixturePredictionMethod)),
+      iastMethod(IASTMethod(inputreader.IASTMethod)),
+      segregatedSortedComponents(maxIsothermTerms, std::vector<Component>(components)),
+      alpha1(Ncomp),
+      alpha2(Ncomp),
+      alpha_prod(Ncomp),
+      x(Ncomp),
+      pstar(Nsorted),
+      psi(Nsorted),
+      G(Nsorted),
+      delta(Nsorted),
+      Phi(Nsorted * Nsorted),
+      temperature(inputreader.temperature),
+      pressureStart(inputreader.pressureStart),
+      pressureEnd(inputreader.pressureEnd),
+      numberOfPressurePoints(inputreader.numberOfPressurePoints),
+      pressureScale(PressureScale(inputreader.pressureScale))
 {
   sortComponents();
 }
