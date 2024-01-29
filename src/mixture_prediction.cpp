@@ -1075,9 +1075,10 @@ std::string MixturePrediction::repr() const
   s += "Component data\n";
   s += "=======================================================\n";
   s += "maximum isotherm terms:        " + std::to_string(maxIsothermTerms) + "\n";
-  for(size_t i = 0; i < Ncomp; ++i)
+  for (size_t i = 0; i < Ncomp; ++i)
   {
-    s += sortedComponents[i].repr() + "\n";
+    s += sortedComponents[i].repr();
+    s += "\n";
   }
   return s;
 }
@@ -1090,46 +1091,19 @@ void MixturePrediction::run()
   std::vector<double> cachedP0(Ncomp * maxIsothermTerms);
   std::vector<double> cachedPsi(maxIsothermTerms);
 
-  for(size_t i = 0; i < Ncomp; ++i)
+  for (size_t i = 0; i < Ncomp; ++i)
   {
     Yi[i] = components[i].Yi0;
   }
-  
-  std::vector<double> pressures(numberOfPressurePoints);
 
-  if(numberOfPressurePoints > 1)
-  {
-    switch(pressureScale)
-    {
-      case PressureScale::Log:
-      default:
-        for(size_t i = 0; i < numberOfPressurePoints; ++i)
-        {
-          pressures[i] = std::pow(10, std::log10(pressureStart) + 
-                         ((std::log10(pressureEnd) - log10(pressureStart)) * 
-                         (static_cast<double>(i) / static_cast<double>(numberOfPressurePoints - 1))));
-        }
-        break;
-      case PressureScale::Normal:
-        for(size_t i = 0; i < numberOfPressurePoints; ++i)
-        {
-          pressures[i] = pressureStart + (pressureEnd - pressureStart) * (static_cast<double>(i) /
-                         static_cast<double>(numberOfPressurePoints - 1));
-        }
-        break;
-    }
-  }
-  else 
-  {
-    pressures[0] = pressureStart;
-  }
+  std::vector<double> pressures = initPressures();
 
   // create the output files
   std::vector<std::ofstream> streams;
   for (size_t i = 0; i < Ncomp; i++)
   {
     std::string fileName = "component_" + std::to_string(i) + "_" + components[i].name + ".data";
-    streams.emplace_back(std::ofstream{ fileName });
+    streams.emplace_back(std::ofstream{fileName});
   }
 
   for (size_t i = 0; i < Ncomp; i++)
@@ -1144,21 +1118,51 @@ void MixturePrediction::run()
     streams[i] << std::setprecision(14);
   }
 
-  for(size_t i = 0; i < numberOfPressurePoints; ++i)
+  for (size_t i = 0; i < numberOfPressurePoints; ++i)
   {
     std::pair<double, double> performance = predictMixture(Yi, pressures[i], Xi, Ni, &cachedP0[0], &cachedPsi[0]);
     std::cout << "Pressure: " << pressures[i] << " iterations: " << performance.first << std::endl;
 
     for (size_t j = 0; j < Ncomp; j++)
     {
-      double p_star =  Yi[j] * pressures[i] / Xi[j];
-      streams[j] << pressures[i] << " " << components[j].isotherm.value(pressures[i]) << " " << Ni[j] 
-                 << " " << Yi[j] << " " << Xi[j] << " " 
-                 << components[j].isotherm.psiForPressure(p_star) << "\n";
+      double p_star = Yi[j] * pressures[i] / Xi[j];
+      streams[j] << pressures[i] << " " << components[j].isotherm.value(pressures[i]) << " " << Ni[j] << " " << Yi[j]
+                 << " " << Xi[j] << " " << components[j].isotherm.psiForPressure(p_star) << "\n";
     }
   }
 }
 
+std::vector<double> MixturePrediction::initPressures()
+{
+  std::vector<double> pressures(numberOfPressurePoints);
+  if (numberOfPressurePoints > 1)
+  {
+    switch (pressureScale)
+    {
+      case PressureScale::Log:
+      default:
+        for (size_t i = 0; i < numberOfPressurePoints; ++i)
+        {
+          pressures[i] = std::pow(10, std::log10(pressureStart) +
+                                          ((std::log10(pressureEnd) - log10(pressureStart)) *
+                                           (static_cast<double>(i) / static_cast<double>(numberOfPressurePoints - 1))));
+        }
+        break;
+      case PressureScale::Normal:
+        for (size_t i = 0; i < numberOfPressurePoints; ++i)
+        {
+          pressures[i] = pressureStart + (pressureEnd - pressureStart) *
+                                             (static_cast<double>(i) / static_cast<double>(numberOfPressurePoints - 1));
+        }
+        break;
+    }
+  }
+  else
+  {
+    pressures[0] = pressureStart;
+  }
+  return pressures;
+}
 
 void MixturePrediction::createPureComponentsPlotScript()
 {
@@ -1377,3 +1381,50 @@ void MixturePrediction::sortComponents()
     std::rotate(it, it + 1, sortedComponents.end());
   }
 }
+
+#ifdef PYBUILD
+py::array_t<double> MixturePrediction::compute()
+{
+  // based on the run() method, but returns array.
+  std::vector<double> Yi(Ncomp);
+  std::vector<double> Xi(Ncomp);
+  std::vector<double> Ni(Ncomp);
+  std::vector<double> cachedP0(Ncomp * maxIsothermTerms);
+  std::vector<double> cachedPsi(maxIsothermTerms);
+
+  for (size_t i = 0; i < Ncomp; ++i)
+  {
+    Yi[i] = components[i].Yi0;
+  }
+
+  std::vector<double> pressures = initPressures();
+
+  std::array<size_t, 3> shape{{numberOfPressurePoints, Ncomp, 6}};
+  py::array_t<double> mixPred(shape);
+  double *data = mixPred.mutable_data();
+
+  for (size_t i = 0; i < numberOfPressurePoints; ++i)
+  {
+    // check for error from python side (keyboard interrupt)
+    if (PyErr_CheckSignals() != 0)
+    {
+      throw py::error_already_set();
+    }
+
+    predictMixture(Yi, pressures[i], Xi, Ni, &cachedP0[0], &cachedPsi[0]);
+    for (size_t j = 0; j < Ncomp; j++)
+    {
+      double p_star = Yi[j] * pressures[i] / Xi[j];
+      size_t k = (i * Ncomp + j) * 6;
+      data[k] = pressures[i];
+      data[k + 1] = components[j].isotherm.value(pressures[i]);
+      data[k + 2] = Ni[j];
+      data[k + 3] = Yi[j];
+      data[k + 4] = Xi[j];
+      data[k + 5] = components[j].isotherm.psiForPressure(p_star);
+    }
+  }
+  return mixPred;
+}
+
+#endif  // PYBUILD

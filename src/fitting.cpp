@@ -22,28 +22,34 @@
   #include <sys/stat.h>
 #endif
 
+#ifdef PYBUILD
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+#endif  // PYBUILDa
 
-Fitting::Fitting(const InputReader &inputreader):
-  Ncomp(inputreader.components.size()),
-  displayName(inputreader.displayName),
-  componentName(Ncomp),
-  filename(Ncomp),
-  isotherms(Ncomp),
-  columnPressure(inputreader.columnPressure - 1),
-  columnLoading(inputreader.columnLoading - 1),
-  columnError(inputreader.columnError - 1),
-  pressureScale(PressureScale(inputreader.pressureScale)),
-  GA_Size(static_cast<size_t>(std::pow(2.0, 12.0))),
-  GA_MutationRate( 1.0/3.0 ),
-  GA_EliteRate( 0.15 ),
-  GA_MotleyCrowdRate( 0.25 ),
-  GA_DisasterRate( 0.001 ),
-  GA_Elitists( static_cast<size_t>(static_cast<double>(GA_Size) * GA_EliteRate) ),
-  GA_Motleists( static_cast<size_t>(static_cast<double>(GA_Size) * (1.0 - GA_MotleyCrowdRate)) ),
-  popAlpha(static_cast<size_t>(std::pow(2.0, 12.0))),
-  popBeta(static_cast<size_t>(std::pow(2.0, 12.0))),
-  parents(popAlpha),
-  children(popBeta)
+Fitting::Fitting(const InputReader &inputreader)
+    : Ncomp(inputreader.components.size()),
+      components(inputreader.components),
+      displayName(inputreader.displayName),
+      componentName(Ncomp),
+      filename(Ncomp),
+      isotherms(Ncomp),
+      columnPressure(inputreader.columnPressure - 1),
+      columnLoading(inputreader.columnLoading - 1),
+      columnError(inputreader.columnError - 1),
+      pressureScale(PressureScale(inputreader.pressureScale)),
+      GA_Size(static_cast<size_t>(std::pow(2.0, 12.0))),
+      GA_MutationRate(1.0 / 3.0),
+      GA_EliteRate(0.15),
+      GA_MotleyCrowdRate(0.25),
+      GA_DisasterRate(0.001),
+      GA_Elitists(static_cast<size_t>(static_cast<double>(GA_Size) * GA_EliteRate)),
+      GA_Motleists(static_cast<size_t>(static_cast<double>(GA_Size) * (1.0 - GA_MotleyCrowdRate))),
+      popAlpha(static_cast<size_t>(std::pow(2.0, 12.0))),
+      popBeta(static_cast<size_t>(std::pow(2.0, 12.0))),
+      parents(popAlpha),
+      children(popBeta)
 {
   for(size_t i = 0 ; i < Ncomp; ++i)
   {
@@ -55,6 +61,7 @@ Fitting::Fitting(const InputReader &inputreader):
 
 Fitting::Fitting(std::string _displayName, std::vector<Component> _components, size_t _pressureScale)
     : Ncomp(_components.size()),
+      components(_components),
       displayName(_displayName),
       componentName(Ncomp),
       isotherms(Ncomp),
@@ -968,3 +975,56 @@ void Fitting::createPlotScript()
 
 }
 
+#ifdef PYBUILD
+std::vector<double> Fitting::compute(std::vector<std::pair<double, double>> data)
+{
+  rawData = data;
+  std::vector<double> output;
+  std::cout << "STARTING FITTING\n";
+  for (size_t i = 0; i < Ncomp; ++i)
+  {
+    // check for error from python side (keyboard interrupt)
+    if (PyErr_CheckSignals() != 0)
+    {
+      throw py::error_already_set();
+    }
+
+    // run algorithm
+    for (const auto &pair : rawData)
+    {
+      std::cout << "(" << pair.first << ", " << pair.second << ") ";
+    }
+
+    const DNA bestCitizen = fit(i);
+    DNA optimizedBestCitizen = simplex(bestCitizen, 1.0);
+
+    // save optimized params to component, insert in output array
+    std::vector<double> compParams = optimizedBestCitizen.phenotype.getParameters();
+    components[i].isotherm.setParameters(compParams);
+    output.insert(output.end(), compParams.begin(), compParams.end());
+
+    optimizedBestCitizen.phenotype.print();
+  }
+  return output;
+}
+
+py::array_t<double> Fitting::evaluate()
+{
+  // initialize numpy array
+  size_t Npress = rawData.size();
+  std::array<size_t, 2> shape{{Npress, Ncomp}};
+  py::array_t<double> output(shape);
+  double *data = output.mutable_data();
+
+  // add datapoints
+  for (size_t i = 0; i < Npress; i++)
+  {
+    for (size_t j = 0; j < Ncomp; j++)
+    {
+      data[i * Ncomp + j] = components[j].isotherm.value(rawData[i].first);
+    }
+  }
+  return output;
+}
+
+#endif  // PYBUILD

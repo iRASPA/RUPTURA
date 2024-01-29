@@ -6,6 +6,12 @@
 #include "inputreader.h"
 #include "component.h"
 
+#ifdef PYBUILD
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+#endif  // P
+
 class MixturePrediction
 {
   public:
@@ -32,6 +38,7 @@ class MixturePrediction
     std::string repr() const;
     void sortComponents();
     void run();
+    std::vector<double> initPressures();
     void createPureComponentsPlotScript();
     void createMixturePlotScript();
     void createMixtureAdsorbedMolFractionPlotScript();
@@ -50,6 +57,10 @@ class MixturePrediction
 
     // keep this non private for breakthrough
     size_t maxIsothermTerms;
+
+#ifdef PYBUILD
+    py::array_t<double> compute();
+#endif  // PYBUILD
 
    private:
     std::string displayName;

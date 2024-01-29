@@ -10,6 +10,12 @@
 #include "component.h"
 #include "multi_site_isotherm.h"
 
+#ifdef PYBUILD
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+#endif  // PYBUILD
+
 struct Fitting
 {
   struct DNA
@@ -60,6 +66,7 @@ struct Fitting
   const DNA simplex(DNA citizen, double scale);
 
   size_t Ncomp;
+  std::vector<Component> components;
   std::string displayName;
   std::vector<std::string> componentName;
   std::vector<std::string> filename;
@@ -92,4 +99,9 @@ struct Fitting
   std::vector<DNA> popBeta;
   std::vector<DNA> &parents;
   std::vector<DNA> &children;
+
+#ifdef PYBUILD
+  std::vector<double> compute(std::vector<std::pair<double, double>> data);
+  py::array_t<double> evaluate();
+#endif
 };

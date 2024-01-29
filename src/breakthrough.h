@@ -6,6 +6,12 @@
 #include "inputreader.h"
 #include "mixture_prediction.h"
 
+#ifdef PYBUILD
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+#endif  // PYBUILD
+
 struct Breakthrough
 {
   public:
@@ -19,11 +25,16 @@ struct Breakthrough
     std::string repr() const;
     void initialize();
     void run();
+    void computeStep(size_t step);
 
     void createPlotScript();
     void createMovieScripts();
 
-  private:
+#ifdef PYBUILD
+    py::array_t<double> compute();
+#endif  // PYBUILD
+
+   private:
     const std::string displayName;
     const std::vector<Component> components;
     size_t carrierGasComponent{ 0 }; 
