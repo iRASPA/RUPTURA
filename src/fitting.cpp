@@ -53,6 +53,31 @@ Fitting::Fitting(const InputReader &inputreader):
   }
 }
 
+Fitting::Fitting(std::string _displayName, std::vector<Component> _components, size_t _pressureScale)
+    : Ncomp(_components.size()),
+      displayName(_displayName),
+      componentName(Ncomp),
+      isotherms(Ncomp),
+      pressureScale(PressureScale(_pressureScale)),
+      GA_Size(static_cast<size_t>(std::pow(2.0, 12.0))),
+      GA_MutationRate(1.0 / 3.0),
+      GA_EliteRate(0.15),
+      GA_MotleyCrowdRate(0.25),
+      GA_DisasterRate(0.001),
+      GA_Elitists(static_cast<size_t>(static_cast<double>(GA_Size) * GA_EliteRate)),
+      GA_Motleists(static_cast<size_t>(static_cast<double>(GA_Size) * (1.0 - GA_MotleyCrowdRate))),
+      popAlpha(static_cast<size_t>(std::pow(2.0, 12.0))),
+      popBeta(static_cast<size_t>(std::pow(2.0, 12.0))),
+      parents(popAlpha),
+      children(popBeta)
+{
+  for (size_t i = 0; i < Ncomp; ++i)
+  {
+    componentName[i] = _components[i].name;
+    isotherms[i] = _components[i].isotherm;
+  }
+}
+
 void Fitting::readData(size_t ID)
 {
   std::ifstream fileInput{ filename[ID] };

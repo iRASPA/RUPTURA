@@ -89,6 +89,57 @@ Breakthrough::Breakthrough(const InputReader &inputReader):
     cachedPsi((Ngrid + 1) * maxIsothermTerms)
 {
 }
+Breakthrough::Breakthrough(std::string _displayName, std::vector<Component> _components, size_t _carrierGasComponent,
+                           size_t _numberOfGridPoints, size_t _printEvery, size_t _writeEvery, double _temperature,
+                           double _p_total, double _columnVoidFraction, double _pressureGradient,
+                           double _particleDensity, double _columnEntranceVelocity, double _columnLength,
+                           double _timeStep, size_t _numberOfTimeSteps, bool _autoSteps, bool _pulse, double _pulseTime,
+                           const MixturePrediction _mixture)
+    : displayName(_displayName),
+      components(_components),
+      carrierGasComponent(_carrierGasComponent),
+      Ncomp(_components.size()),
+      Ngrid(_numberOfGridPoints),
+      printEvery(_printEvery),
+      writeEvery(_writeEvery),
+      T(_temperature),
+      p_total(_p_total),
+      dptdx(_pressureGradient),
+      epsilon(_columnVoidFraction),
+      rho_p(_particleDensity),
+      v_in(_columnEntranceVelocity),
+      L(_columnLength),
+      dx(L / static_cast<double>(Ngrid)),
+      dt(_timeStep),
+      Nsteps(_numberOfTimeSteps),
+      autoSteps(_autoSteps),
+      pulse(_pulse),
+      tpulse(_pulseTime),
+      mixture(_mixture),
+      maxIsothermTerms(mixture.maxIsothermTerms),
+      prefactor(Ncomp),
+      Yi(Ncomp),
+      Xi(Ncomp),
+      Ni(Ncomp),
+      V(Ngrid + 1),
+      Vnew(Ngrid + 1),
+      Pt(Ngrid + 1),
+      P((Ngrid + 1) * Ncomp),
+      Pnew((Ngrid + 1) * Ncomp),
+      Q((Ngrid + 1) * Ncomp),
+      Qnew((Ngrid + 1) * Ncomp),
+      Qeq((Ngrid + 1) * Ncomp),
+      Qeqnew((Ngrid + 1) * Ncomp),
+      Dpdt((Ngrid + 1) * Ncomp),
+      Dpdtnew((Ngrid + 1) * Ncomp),
+      Dqdt((Ngrid + 1) * Ncomp),
+      Dqdtnew((Ngrid + 1) * Ncomp),
+      cachedP0((Ngrid + 1) * Ncomp * maxIsothermTerms),
+      cachedPsi((Ngrid + 1) * maxIsothermTerms)
+{
+  // normally ran in main.cpp, now run by default
+  initialize();
+}
 
 void Breakthrough::initialize()
 {

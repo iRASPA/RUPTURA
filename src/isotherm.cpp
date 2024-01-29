@@ -9,6 +9,21 @@ Isotherm::Isotherm(Isotherm::Type t, const std::vector<double> &values, size_t n
 {
 }
 
+Isotherm::Isotherm(std::string t, const std::vector<double> &values, size_t numberOfValues)
+    : parameters(values), numberOfParameters(numberOfValues)
+{
+  auto itr = Isotherm::isotherm_map.find(t);
+  if (itr != isotherm_map.end())
+  {
+    type = itr->second;
+  }
+  else
+  {
+    std::cout << "Error: unknown isotherm type (" << t << ").";
+    exit(0);
+  }
+}
+
 std::string Isotherm::repr() const
 {
   std::string s;

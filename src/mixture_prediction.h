@@ -24,8 +24,13 @@ class MixturePrediction
     };
 
     MixturePrediction(const InputReader &inputreader);
+    MixturePrediction(std::string _displayName, std::vector<Component> _components, size_t _numberOfCarrierGases,
+                      size_t _carrierGasComponent, double _temperature, double _pressureStart, double _pressureEnd,
+                      size_t _numberOfPressurePoints, size_t _pressureScale, size_t _predictionMethod,
+                      size_t _iastMethod);
 
     std::string repr() const;
+    void sortComponents();
     void run();
     void createPureComponentsPlotScript();
     void createMixturePlotScript();
@@ -43,7 +48,10 @@ class MixturePrediction
                                              double *cachedP0,
                                              double *cachedPsi);
 
-  private:
+    // keep this non private for breakthrough
+    size_t maxIsothermTerms;
+
+   private:
     std::string displayName;
     const std::vector<Component> components;
     std::vector<Component> sortedComponents;
@@ -53,7 +61,6 @@ class MixturePrediction
     size_t carrierGasComponent;
     PredictionMethod predictionMethod;
     IASTMethod iastMethod;
-    size_t maxIsothermTerms;
     std::vector<std::vector<Component>> segregatedSortedComponents;
 
     std::vector<double> alpha1;

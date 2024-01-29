@@ -10,6 +10,11 @@ struct Breakthrough
 {
   public:
     Breakthrough(const InputReader &inputreader);
+    Breakthrough(std::string _displayName, std::vector<Component> _components, size_t _carrierGasComponent,
+                 size_t _numberOfGridPoints, size_t _printEvery, size_t _writeEvery, double _temperature,
+                 double _p_total, double _columnVoidFraction, double _pressureGradient, double _particleDensity,
+                 double _columnEntranceVelocity, double _columnLength, double _timeStep, size_t _numberOfTimeSteps,
+                 bool _autoSteps, bool _pulse, double _pulseTime, const MixturePrediction _mixture);
 
     std::string repr() const;
     void initialize();

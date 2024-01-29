@@ -36,6 +36,7 @@ struct Fitting
   };
 
   Fitting(const InputReader &inputreader);
+  Fitting(std::string name, std::vector<Component> comps, size_t _pressureScale);
 
   void readData(size_t ID);
   void run();
