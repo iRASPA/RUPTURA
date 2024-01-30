@@ -29,6 +29,7 @@ struct MultiSiteIsotherm
     std::pair<size_t, size_t> index = parameterIndices[i];
     return sites[index.first].parameters[index.second];
   }
+  void setParameters(size_t i, double value);
 
   void add(const Isotherm &isotherm);
 
