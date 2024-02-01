@@ -94,7 +94,7 @@ class Components:
 
         # add isotherm information
         cpp_isotherms = [
-            _ruptura.Isotherm(isothermMeta[isotherm[0]],
+            _ruptura.Isotherm(isotherm[0],
                               isotherm[1:],
                               len(isotherm) - 1) for isotherm in isotherms
         ]
@@ -146,7 +146,6 @@ class Fitting:
 
     def __init__(self,
                  components: Components,
-                 fullData: list[tuple],
                  pressureScale: Literal["log", "linear"] = "log",
                  displayName: str = "Column"):
         """
@@ -159,57 +158,27 @@ class Fitting:
             displayName (str, optional): The name to be displayed, defaults to "Column".
         """
         self.components = components
-        self.fullData = fullData
         self.data = None
 
         # create cpp object
         self.Fitting = _ruptura.Fitting(displayName, components.components,
-                                        fullData,
                                         pressureScales[pressureScale])
 
-    @classmethod
-    def from_files(cls,
-                   components: Components,
-                   fileNames: str,
-                   pressureScale: str = "log",
-                   displayName: str = "Column",
-                   columnPressure: int = 0,
-                   columnLoading: int = 3):
-        """
-        Class method to create an instance of Fitting class from a file.
-
-        Parameters:
-            components (Components): An instance of the Components class.
-            fileNames (str): The names of the files.
-            pressureScale (str, optional): The scale for pressure, defaults to "log".
-            displayName (str, optional): The name to be displayed, defaults to "Column".
-            columnPressure (int, optional): The column number for pressure in the file, defaults to 0.
-            columnLoading (int, optional): The column number for loading in the file, defaults to 3.
-
-        Returns:
-            Fitting: An instance of the Fitting class.
-        """
-        for i, fn in enumerate(fileNames):
-            read = np.genfromtxt(fn)
-            if i == 0:
-                fullData = read[:, [columnPressure, columnLoading]]
-            else:
-                fullData = np.hstack(
-                    (fullData, read[:, columnLoading:columnLoading + 1]))
-
-        return cls(components, fullData, pressureScale, displayName)
-
-    def compute(self):
+    def compute(self, data):
         """
         Computes the fitted data and returns it.
 
         Returns:
             np.ndarray: Computed data.
         """
-        self.data = self.Fitting.compute()
+        self.data = self.Fitting.compute(data)
         return self.data
+    
+    def evaluate(self, p):
+        evaluatedPoints = self.Fitting.evaluate(p)
+        return evaluatedPoints
 
-    def plot(self, ax):
+    def plot(self, ax, data):
         """
         Plots the fitted data.
 
@@ -228,11 +197,9 @@ class Fitting:
         labels = [comp.name for comp in self.components.components]
         ncomp = len(labels)
 
+        print(evaluatedPoints.shape)
         for i in range(ncomp):
-            ax.scatter(self.fullData[:, 0],
-                       self.fullData[:, i + 1],
-                       label=labels[i],
-                       marker=getMarker)
+            ax.scatter(data[:, 0], data[:, i + 1])
 
 
 class MixturePrediction:

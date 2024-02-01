@@ -957,32 +957,47 @@ void Fitting::createPlotScript()
 }
 
 #ifdef PYBUILD
-std::vector<double> Fitting::compute(std::vector<std::pair<double, double>> data)
+
+void Fitting::selectData(size_t ID, py::array_t<double> data)
 {
-  rawData = data;
+  rawData.clear();
+  auto r = data.unchecked<3>();
+  for (size_t p = 0; p < data.shape(1); p++)
+  {
+    rawData.push_back(std::make_pair(r(ID, p, 0), r(ID, p, 1)));
+  }
+
+  // get pressure range
+  std::sort(rawData.begin(), rawData.end());
+  pressureRange = std::make_pair(rawData.front().first, rawData.back().first);
+  logPressureRange = std::make_pair(std::log(pressureRange.first), std::log(pressureRange.second));
+
+  maximumLoading = 0.0;
+  for (const auto &pair : rawData)
+  {
+    if (pair.second > maximumLoading)
+    {
+      maximumLoading = pair.second;
+    }
+  }
+}
+
+std::vector<double> Fitting::compute(py::array_t<double> data)
+{
   std::vector<double> output;
   std::cout << "STARTING FITTING\n";
-  for (size_t i = 0; i < Ncomp; ++i)
+
+  for (size_t ID = 0; ID < Ncomp; ++ID)
   {
-    // check for error from python side (keyboard interrupt)
-    if (PyErr_CheckSignals() != 0)
-    {
-      throw py::error_already_set();
-    }
+    selectData(ID, data);
 
-    // run algorithm
-    for (const auto &pair : rawData)
-    {
-      std::cout << "(" << pair.first << ", " << pair.second << ") ";
-    }
-
-    const DNA bestCitizen = fit(i);
+    const DNA bestCitizen = fit(ID);
     DNA optimizedBestCitizen = simplex(bestCitizen, 1.0);
 
     // save optimized params to component, insert in output array
     for (size_t j = 0; j < optimizedBestCitizen.phenotype.numberOfParameters; j++)
     {
-      components[i].isotherm.setParameters(j, optimizedBestCitizen.phenotype.parameters(j));
+      components[ID].isotherm.setParameters(j, optimizedBestCitizen.phenotype.parameters(j));
       output.push_back(optimizedBestCitizen.phenotype.parameters(j));
     }
     std::cout << optimizedBestCitizen.phenotype.repr() << "\n";
@@ -990,10 +1005,10 @@ std::vector<double> Fitting::compute(std::vector<std::pair<double, double>> data
   return output;
 }
 
-py::array_t<double> Fitting::evaluate()
+py::array_t<double> Fitting::evaluate(std::vector<double> pressure)
 {
   // initialize numpy array
-  size_t Npress = rawData.size();
+  size_t Npress = pressure.size();
   std::array<size_t, 2> shape{{Npress, Ncomp}};
   py::array_t<double> output(shape);
   double *data = output.mutable_data();
@@ -1003,7 +1018,7 @@ py::array_t<double> Fitting::evaluate()
   {
     for (size_t j = 0; j < Ncomp; j++)
     {
-      data[i * Ncomp + j] = components[j].isotherm.value(rawData[i].first);
+      data[i * Ncomp + j] = components[j].isotherm.value(pressure[i]);
     }
   }
   return output;
