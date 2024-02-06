@@ -30,8 +30,8 @@ namespace py = pybind11;
 
 Fitting::Fitting(const InputReader &inputreader)
     : Ncomp(inputreader.components.size()),
-      components(inputreader.components),
       displayName(inputreader.displayName),
+      components(inputreader.components),
       filename(Ncomp),
       columnPressure(inputreader.columnPressure - 1),
       columnLoading(inputreader.columnLoading - 1),
@@ -57,8 +57,8 @@ Fitting::Fitting(const InputReader &inputreader)
 
 Fitting::Fitting(std::string _displayName, std::vector<Component> _components, size_t _pressureScale)
     : Ncomp(_components.size()),
-      components(_components),
       displayName(_displayName),
+      components(_components),
       pressureScale(PressureScale(_pressureScale)),
       GA_Size(static_cast<size_t>(std::pow(2.0, 12.0))),
       GA_MutationRate(1.0 / 3.0),
@@ -935,14 +935,14 @@ void Fitting::createPlotScript()
     stream_graphs << "set PATH=%PATH%;C:\\Program Files\\gnuplot\\bin;C:\\Program Files\\ffmpeg-master-latest-win64-gpl\\bin;C:\\Program Files\\ffmpeg\\bin\n";
     for(size_t i = 0; i < Ncomp; ++i)
     {
-      std::string plotFileName = "plot_fit_component_" + std::to_string(i) + "_" + componentName[i];
+      std::string plotFileName = "plot_fit_component_" + std::to_string(i) + "_" + components[i].name;
       stream_graphs << "gnuplot.exe " << plotFileName << "\n";
     }
   #else
     std::ofstream stream_graphs("make_graphs");
     for(size_t i = 0; i < Ncomp; ++i)
     {
-      std::string plotFileName = "plot_fit_component_" + std::to_string(i) + "_" + componentName[i];
+      std::string plotFileName = "plot_fit_component_" + std::to_string(i) + "_" + components[i].name;
       stream_graphs << "gnuplot " << plotFileName << "\n";
     }
   #endif
@@ -1000,7 +1000,10 @@ std::vector<double> Fitting::compute(py::array_t<double> data)
       components[ID].isotherm.setParameters(j, optimizedBestCitizen.phenotype.parameters(j));
       output.push_back(optimizedBestCitizen.phenotype.parameters(j));
     }
-    std::cout << optimizedBestCitizen.phenotype.repr() << "\n";
+  }
+  for (size_t ID = 0; ID < Ncomp; ++ID)
+  {
+    std::cout << components[ID].repr() << "\n";
   }
   return output;
 }

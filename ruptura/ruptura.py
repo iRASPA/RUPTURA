@@ -87,17 +87,10 @@ class Components:
 
         # create labels for each isotherm in the component
         for site, isotherm in enumerate(isotherms):
-            self.labels += [
-                f"c{idx}_s{site}_{label}"
-                for label in isothermMeta[isotherm[0]]['labels']
-            ]
+            self.labels += [f"c{idx}_s{site}_{label}" for label in isothermMeta[isotherm[0]]['labels']]
 
         # add isotherm information
-        cpp_isotherms = [
-            _ruptura.Isotherm(isotherm[0],
-                              isotherm[1:],
-                              len(isotherm) - 1) for isotherm in isotherms
-        ]
+        cpp_isotherms = [_ruptura.Isotherm(isotherm[0], isotherm[1:], len(isotherm) - 1) for isotherm in isotherms]
 
         # create and append the new component
         comp = _ruptura.Component(
@@ -123,10 +116,7 @@ class Components:
         Returns:
             list[str]: List of labels for all components.
         """
-        return [
-            f"{comp.name} (y_i={comp.gasPhaseMolFraction})"
-            for comp in self.components
-        ]
+        return [f"{comp.name} (y_i={comp.gasPhaseMolFraction})" for comp in self.components]
 
 
 class Fitting:
@@ -143,6 +133,17 @@ class Fitting:
         data (np.ndarray): Computed data after fitting.
         Fitting (_ruptura.Fitting): Instance of the ruptura Fitting class.
     """
+    ax_labels = [
+        "Pressure [Pa]", "Fugacity coeffcient", "Fugacity [Pa]", "Loading (Absolute) [molecules/total cell]",
+        "Error [molecules/total cell]", "Loading (Absolute) [molecules/unit cell]", "Error [molecules/unit cell]",
+        "Loading (Absolute) [mol/kg framework]", "Error [mol/kg framework]",
+        "Loading (Absolute) [milligram/gram framework]", "Error [milligram/gram framework]",
+        "Loading (Excess) [molecules/total cell]", "Error [molecules/total cell]",
+        "Loading (Excess) [molecules/unit cell]", "Error [molecules/unit cell]",
+        "Loading (Excess) [mol/kg framework]", "Error [mol/kg framework]",
+        "Loading (Excess) [milligram/gram framework]", "Error [milligram/gram framework]", "heat of desorption [K]",
+        "heat of desorption error [K]"
+    ]
 
     def __init__(self,
                  components: Components,
@@ -161,8 +162,7 @@ class Fitting:
         self.data = None
 
         # create cpp object
-        self.Fitting = _ruptura.Fitting(displayName, components.components,
-                                        pressureScales[pressureScale])
+        self.Fitting = _ruptura.Fitting(displayName, components.components, pressureScales[pressureScale])
 
     def compute(self, data):
         """
@@ -173,12 +173,12 @@ class Fitting:
         """
         self.data = self.Fitting.compute(data)
         return self.data
-    
+
     def evaluate(self, p):
         evaluatedPoints = self.Fitting.evaluate(p)
         return evaluatedPoints
 
-    def plot(self, ax, data):
+    def plot(self, ax, data, p, ixlabel, iylabel):
         """
         Plots the fitted data.
 
@@ -188,18 +188,19 @@ class Fitting:
         Raises:
             AssertionError: If the data has not been computed before plotting.
         """
-        assert self.data is not None
-        evaluatedPoints = self.Fitting.evaluate()
+
+        loadings = self.Fitting.evaluate(p)
         ax.set_xscale("log")
-        ax.set_xlabel("Pressure (Pa)")
-        ax.set_ylabel("Loading (mol / unit cell)")
+        ax.set_xlabel(self.ax_labels[ixlabel])
+        ax.set_ylabel(self.ax_labels[iylabel])
 
         labels = [comp.name for comp in self.components.components]
         ncomp = len(labels)
 
-        print(evaluatedPoints.shape)
         for i in range(ncomp):
-            ax.scatter(data[:, 0], data[:, i + 1])
+            ax.scatter(data[i, :, 0], data[i, :, 1], label=self.components.components[i].name)
+            ax.plot(p, loadings[:, i])
+        ax.legend()
 
 
 class MixturePrediction:
@@ -259,12 +260,7 @@ class MixturePrediction:
 
         # select method integers (enum)
         pressureScale = pressureScales[pressureScale]
-        predictionMethod = {
-            "IAST": 0,
-            "SIAST": 1,
-            "EI": 2,
-            "SEI": 3
-        }[predictionMethod]
+        predictionMethod = {"IAST": 0, "SIAST": 1, "EI": 2, "SEI": 3}[predictionMethod]
         iastMethod = {"FastIAST": 0, "NestedLoopBisection": 1}[iastMethod]
         self.components = components
 
@@ -305,8 +301,7 @@ class MixturePrediction:
         self.data = self.MixturePrediction.compute()
         return self.data
 
-    def plot(self, ax, plot_type: Literal["pure", "mixture",
-                                          "mixture_molfrac"]):
+    def plot(self, ax, plot_type: Literal["pure", "mixture", "mixture_molfrac"]):
         """
         Plot the mixture prediction data.
 
@@ -359,6 +354,7 @@ class Breakthrough:
         Breakthrough (_ruptura.Breakthrough): The Breakthrough model from _ruptura.
         data (np.ndarray): The data predicted by the model, which is computed by calling the `compute` method. Before computation, it's None.
     """
+
     def __init__(
         self,
         components: Components,
@@ -410,18 +406,15 @@ class Breakthrough:
 
         # determine number of timesteps and set autosteps flag
         autoSteps = numberOfTimeSteps == "auto"
-        numberOfTimeSteps = 0 if numberOfTimeSteps == "auto" else int(
-            numberOfTimeSteps)
-        
+        numberOfTimeSteps = 0 if numberOfTimeSteps == "auto" else int(numberOfTimeSteps)
+
         # determine pulsetime and pulse flag
         pulse = pulseTime is not None
         pulseTime = 0 if pulseTime is None else pulseTime
 
         # create mixtureprediction object
         carrierGas = components.carrierGas if components.carrierGas else 0
-        mix = MixturePrediction(displayName=displayName,
-                                temperature=temperature,
-                                components=components)
+        mix = MixturePrediction(displayName=displayName, temperature=temperature, components=components)
 
         # create breakthrough cpp object
         self.Breakthrough = _ruptura.Breakthrough(
@@ -446,7 +439,6 @@ class Breakthrough:
             mix.MixturePrediction,
         )
 
-
     def compute(self):
         """
         Computes the data for the breakthrough model. The computed data is stored in the class attribute 'data'.
@@ -457,8 +449,7 @@ class Breakthrough:
         self.data = self.Breakthrough.compute()
         return self.data
 
-    def plot(self, ax, plot_type: Literal["breakthrough", "Dpdt", "Dqdt", "P",
-                                          "Pnorm", "Pt", "Q", "Qeq", "V"]):
+    def plot(self, ax, plot_type: Literal["breakthrough", "Dpdt", "Dqdt", "P", "Pnorm", "Pt", "Q", "Qeq", "V"]):
         """
         Plots the data for the breakthrough model. If data has not yet been computed, raises a ValueError.
 
@@ -492,10 +483,6 @@ class Breakthrough:
             ax2.set_xlabel("Time (min)")
 
             for comp in range(ncomp):
-                ax.scatter(x,
-                           self.data[:, -1, 8 + comp * 6],
-                           label=labels[comp],
-                           marker=getMarker(comp),
-                           s=8.0)
+                ax.scatter(x, self.data[:, -1, 8 + comp * 6], label=labels[comp], marker=getMarker(comp), s=8.0)
 
         ax.legend()

@@ -42,7 +42,7 @@ struct Fitting
   };
 
   Fitting(const InputReader &inputreader);
-  Fitting(std::string name, std::vector<Component> comps, size_t _pressureScale);
+  Fitting(std::string _displayName, std::vector<Component> _components, size_t _pressureScale);
 
   void readData(size_t ID);
   void run();
@@ -66,11 +66,9 @@ struct Fitting
   const DNA simplex(DNA citizen, double scale);
 
   size_t Ncomp;
-  std::vector<Component> components;
   std::string displayName;
-  std::vector<std::string> componentName;
+  std::vector<Component> components;
   std::vector<std::string> filename;
-  std::vector<MultiSiteIsotherm> isotherms;
   size_t columnPressure{ 0 };
   size_t columnLoading{ 1 };
   size_t columnError{ 2 };

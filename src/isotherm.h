@@ -54,6 +54,7 @@ struct Isotherm
       {"Henry", Type::Henry},
       {"Freundlich", Type::Freundlich},
       {"Sips", Type::Sips},
+      {"Langmuir-Freundlich", Type::Langmuir_Freundlich},
       {"Redlich-Peterson", Type::Redlich_Peterson},
       {"Toth", Type::Toth},
       {"Unilan", Type::Unilan},
