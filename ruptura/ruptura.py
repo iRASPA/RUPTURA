@@ -139,10 +139,9 @@ class Fitting:
         "Loading (Absolute) [mol/kg framework]", "Error [mol/kg framework]",
         "Loading (Absolute) [milligram/gram framework]", "Error [milligram/gram framework]",
         "Loading (Excess) [molecules/total cell]", "Error [molecules/total cell]",
-        "Loading (Excess) [molecules/unit cell]", "Error [molecules/unit cell]",
-        "Loading (Excess) [mol/kg framework]", "Error [mol/kg framework]",
-        "Loading (Excess) [milligram/gram framework]", "Error [milligram/gram framework]", "heat of desorption [K]",
-        "heat of desorption error [K]"
+        "Loading (Excess) [molecules/unit cell]", "Error [molecules/unit cell]", "Loading (Excess) [mol/kg framework]",
+        "Error [mol/kg framework]", "Loading (Excess) [milligram/gram framework]", "Error [milligram/gram framework]",
+        "heat of desorption [K]", "heat of desorption error [K]"
     ]
 
     def __init__(self,
@@ -160,6 +159,7 @@ class Fitting:
         """
         self.components = components
         self.data = None
+        self.displayName = displayName
 
         # create cpp object
         self.Fitting = _ruptura.Fitting(displayName, components.components, pressureScales[pressureScale])
@@ -191,6 +191,7 @@ class Fitting:
 
         loadings = self.Fitting.evaluate(p)
         ax.set_xscale("log")
+        ax.set_title(self.displayName)
         ax.set_xlabel(self.ax_labels[ixlabel])
         ax.set_ylabel(self.ax_labels[iylabel])
 

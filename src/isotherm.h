@@ -61,7 +61,7 @@ struct Isotherm
       {"OBrien_Myers", Type::OBrien_Myers},
       {"Quadratic", Type::Quadratic},
       {"Temkin", Type::Temkin},
-      {"BingelWalton", Type::BingelWalton},
+      {"Bingel-Walton", Type::BingelWalton},
   };
 
   Isotherm(Isotherm::Type type, const std::vector<double> &values, size_t numberOfValues);

@@ -38,11 +38,11 @@ isothermMeta = {
     'Temkin': {
         'labels': ['q_sat', 'b', 'c']
     },
-    'BingelWalton': {
+    'Bingel-Walton': {
         'labels': ['q_sat', 'a', 'c']
     }
 }
 
 pressureScales = {"log": 0, "linear": 1}
 markers = ["o", "+", "^", "D", "x", "*", "p", "s", "v"]
-getMarker = lambda i: markers[i%len(markers)]
+getMarker = lambda i: markers[i % len(markers)]
