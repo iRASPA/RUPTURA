@@ -198,7 +198,7 @@ class Fitting:
         ncomp = len(labels)
 
         for i in range(ncomp):
-            ax.scatter(data[i, :, 0], data[i, :, 1], label=self.components.components[i].name)
+            ax.scatter(*np.array(data[i]).T, label=self.components.components[i].name)
             ax.plot(p, loadings[:, i])
         ax.legend()
 

@@ -958,17 +958,11 @@ void Fitting::createPlotScript()
 
 #ifdef PYBUILD
 
-void Fitting::selectData(size_t ID, py::array_t<double> data)
+void Fitting::selectData(size_t ID, std::vector<std::vector<std::pair<double, double>>> data)
 {
-  rawData.clear();
-  auto r = data.unchecked<3>();
-  for (size_t p = 0; p < data.shape(1); p++)
-  {
-    rawData.push_back(std::make_pair(r(ID, p, 0), r(ID, p, 1)));
-  }
+  rawData = data[ID];
 
   // get pressure range
-  std::sort(rawData.begin(), rawData.end());
   pressureRange = std::make_pair(rawData.front().first, rawData.back().first);
   logPressureRange = std::make_pair(std::log(pressureRange.first), std::log(pressureRange.second));
 
@@ -982,7 +976,7 @@ void Fitting::selectData(size_t ID, py::array_t<double> data)
   }
 }
 
-std::vector<double> Fitting::compute(py::array_t<double> data)
+std::vector<double> Fitting::compute(std::vector<std::vector<std::pair<double, double>>> data)
 {
   std::vector<double> output;
   std::cout << "STARTING FITTING\n";

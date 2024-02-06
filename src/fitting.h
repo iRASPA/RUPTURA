@@ -99,8 +99,8 @@ struct Fitting
   std::vector<DNA> &children;
 
 #ifdef PYBUILD
-  void selectData(size_t ID, py::array_t<double> data);
-  std::vector<double> compute(py::array_t<double> data);
+  void selectData(size_t ID, std::vector<std::vector<std::pair<double, double>>> data);
+  std::vector<double> compute(std::vector<std::vector<std::pair<double, double>>> data);
   py::array_t<double> evaluate(std::vector<double> pressure);
 #endif
 };
