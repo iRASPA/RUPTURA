@@ -258,6 +258,7 @@ class MixturePrediction:
         """
         # set shape attribute
         self.shape = (numberOfPressurePoints, len(components.components), 6)
+        self.displayName=displayName
 
         # select method integers (enum)
         pressureScale = pressureScales[pressureScale]
@@ -321,6 +322,7 @@ class MixturePrediction:
             raise ValueError("Data not computed yet")
 
         # set axes
+        ax.set_title(self.displayName + f" ({plot_type})")
         ax.set_xlabel("Total bulk fluid phase fugacity, f/Pa")
         ylabel = {
             "pure": "Absolute loading q_i",
