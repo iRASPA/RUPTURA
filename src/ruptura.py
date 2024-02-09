@@ -5,27 +5,6 @@ import matplotlib.pyplot as plt
 from .utils import *
 
 
-class RupturaError(Exception):
-    """Base class for other exceptions"""
-    pass
-
-
-class RupturaDataError(RupturaError):
-    """Raised when the input data structure is not as expected"""
-
-    def __init__(self, message="Input data structure is not as expected"):
-        self.message = message
-        super().__init__(self.message)
-
-
-class RupturaCppError(RupturaError):
-    """Raised when there's an error made by the pybind11 C++ code"""
-
-    def __init__(self, message="An error occurred in the Pybind11 C++ code"):
-        self.message = message
-        super().__init__(self.message)
-
-
 class Components:
     """
     Class to manage a list of components for simulation.
@@ -164,7 +143,7 @@ class Fitting:
         # create cpp object
         self.Fitting = _ruptura.Fitting(displayName, components.components, pressureScales[pressureScale])
 
-    def compute(self, data):
+    def compute(self, data: list[list[tuple]]) -> np.ndarray:
         """
         Computes the fitted data and returns it.
 
@@ -174,7 +153,7 @@ class Fitting:
         self.data = self.Fitting.compute(data)
         return self.data
 
-    def evaluate(self, p):
+    def evaluate(self, p: np.ndarray) -> np.ndarray:
         evaluatedPoints = self.Fitting.evaluate(p)
         return evaluatedPoints
 

@@ -24,8 +24,14 @@ setup(
         "Thijs J.H. Vlugt, Delft University of Technology, The Netherlands",
         "David Dubbeldam, University of Amsterdam, The Netherlands"
     ],
+    install_requires=[
+        "matplotlib>=3",
+        "numpy>=1",
+        "pybind11>=2",
+        "setuptools>=42"
+    ],
     ext_modules=ext_modules,
     zip_safe=False,
     packages=["ruptura"],
-    package_dir={"ruptura":"ruptura"}
+    package_dir={"ruptura":"src"}
 )
