@@ -16,14 +16,14 @@ for fn in sys.argv[1:]:
     name = fn.split("-")[-1]
     components.addComponent(
         name = name,
-        gasPhaseMolFraction=1.0,
+        GasPhaseMolFraction=1.0,
         isotherms = [["Langmuir-Freundlich", 0.0, 0.0, 0.0], ["Langmuir-Freundlich", 0.0, 0.0, 0.0], ["Langmuir-Freundlich", 0.0, 0.0, 0.0]]
     )
     loadings.append([(x,y) for x, y in np.genfromtxt(fn, usecols=list(range(21)), invalid_raise=False)[:, select]])
 
 fitting = ruptura.Fitting(
     components=components,
-    displayName="MAF-X8",
+    DisplayName="MAF-X8",
 )
 
 fitting.compute(loadings)

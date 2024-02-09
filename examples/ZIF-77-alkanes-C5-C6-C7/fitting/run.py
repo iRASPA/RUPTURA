@@ -17,14 +17,14 @@ for fn in sys.argv[1:]:
         name = f.readline().split(" ")[3].rstrip("\n")
     components.addComponent(
         name = name,
-        gasPhaseMolFraction=1.0,
+        GasPhaseMolFraction=1.0,
         isotherms = [["Langmuir-Freundlich", 0.0, 0.0, 0.0], ["Langmuir-Freundlich", 0.0, 0.0, 0.0]]
     )
     loadings.append([(x,y) for x, y in np.genfromtxt(fn, usecols=tuple(range(12)), invalid_raise=False)[:, select]])
 
 fitting = ruptura.Fitting(
     components=components,
-    displayName="ZIF-77",
+    DisplayName="ZIF-77",
 )
 
 fitting.compute(loadings)

@@ -2,16 +2,16 @@ import ruptura
 import matplotlib.pyplot as plt
 
 components = ruptura.Components([{
-    "name":
+    "MoleculeName":
         "22DMB",
-    "gasPhaseMolFraction":
+    "GasPhaseMolFraction":
         0.5,
     "isotherms": [["Langmuir-Freundlich", 2.88752, 1.14774e-07, 2.25341],
                   ["Langmuir-Freundlich", 0.938131, 0.0266853, 1.13388]]
 }, {
-    "name":
+    "MoleculeName":
         "23DMB",
-    "gasPhaseMolFraction":
+    "GasPhaseMolFraction":
         0.5,
     "isotherms": [["Langmuir-Freundlich", 3.13648, 1.37996e-08, 3.11688],
                   ["Langmuir-Freundlich", 0.00385344, 4.51394, 10.1938],
@@ -19,12 +19,12 @@ components = ruptura.Components([{
 }])
 
 mix = ruptura.MixturePrediction(components=components,
-                                displayName="MAF-6",
-                                temperature=298.0,
-                                pressureStart=1e-1,
-                                pressureEnd=1e6,
-                                numberOfPressurePoints=256,
-                                pressureScale="log")
+                                DisplayName="MAF-6",
+                                Temperature=298.0,
+                                PressureStart=1e-1,
+                                PressureEnd=1e6,
+                                NumberOfPressurePoints=256,
+                                PressureScale="log")
 
 data = mix.compute()
 fig, ax = plt.subplots(1, 2, figsize=(8, 6))

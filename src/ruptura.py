@@ -4,6 +4,19 @@ from typing import Union, Literal
 import matplotlib.pyplot as plt
 from .utils import *
 
+def from_input(file_path):
+    return from_config(input_to_config(file_path))
+
+def from_config(config):
+    ruptura_objects = {"Components": Components(config["components"])}
+    if "Fitting" in config.keys():
+        ruptura_objects["Fitting"] = Fitting(components=ruptura_objects["Components"], **config["Fitting"])
+    if "Breakthrough" in config.keys():
+        ruptura_objects["Breakthrough"] = Breakthrough(components=ruptura_objects["Components"], **config["Breakthrough"])
+    if "MixturePrediction" in config.keys():
+        ruptura_objects["MixturePrediction"] = MixturePrediction(components=ruptura_objects["Components"], **config["MixturePrediction"])
+    return ruptura_objects
+
 
 class Components:
     """
@@ -11,13 +24,13 @@ class Components:
 
     Each component is represented as a dictionary with
     various attributes like name, molFraction, isotherms, 
-    massTransferCoefficient, axialDispersionCoefficient, 
-    and whether it's a carrierGas.
+    MassTransferCoefficient, AxialDispersionCoefficient, 
+    and whether it's a CarrierGas.
 
     Attributes:
         components (list): A list of all components (cpp objects) added to this instance.
         labels (list): A list of labels for all components in this instance.
-        carrierGas (int): The index of the carrier gas in the components list, if any.
+        CarrierGas (int): The index of the carrier gas in the components list, if any.
     """
 
     def __init__(self, components: list[dict] = []):
@@ -31,7 +44,7 @@ class Components:
 
         self.components = []
         self.labels = []
-        self.carrierGas = None
+        self.CarrierGas = None
 
         # Add each component in the list
         for comp in components:
@@ -39,25 +52,25 @@ class Components:
 
     def addComponent(
         self,
-        name: str,
-        gasPhaseMolFraction: float,
+        MoleculeName: str,
+        GasPhaseMolFraction: float,
         isotherms: list = [],
-        massTransferCoefficient: float = 0.0,
-        axialDispersionCoefficient: float = 0.0,
-        isCarrierGas: bool = False,
+        MassTransferCoefficient: float = 0.0,
+        AxialDispersionCoefficient: float = 0.0,
+        CarrierGas: bool = False,
     ):
         """
         Adds a component to the list of components.
 
         Parameters:
             name (str): The name of the component.
-            gasPhaseMolFraction (float): The mol fraction of the component.
+            GasPhaseMolFraction (float): The mol fraction of the component.
             isotherms (list, optional): List of isotherms. Defaults to empty list.
-            massTransferCoefficient (float, optional): The mass transfer coefficient of the component. 
+            MassTransferCoefficient (float, optional): The mass transfer coefficient of the component. 
                 Defaults to 0.0.
-            axialDispersionCoefficient (float, optional): The axial dispersion coefficient of the component.
+            AxialDispersionCoefficient (float, optional): The axial dispersion coefficient of the component.
                 Defaults to 0.0.
-            isCarrierGas (bool, optional): Specifies whether this component is the carrier gas. 
+            CarrierGas (bool, optional): Specifies whether this component is the carrier gas. 
                 Defaults to False.
         """
 
@@ -74,17 +87,17 @@ class Components:
         # create and append the new component
         comp = _ruptura.Component(
             idx,
-            name,
+            MoleculeName,
             cpp_isotherms,
-            gasPhaseMolFraction,
-            massTransferCoefficient,
-            axialDispersionCoefficient,
-            isCarrierGas,
+            GasPhaseMolFraction,
+            MassTransferCoefficient,
+            AxialDispersionCoefficient,
+            CarrierGas,
         )
 
-        # if this component is the carrier gas, update the carrierGas attribute
-        if isCarrierGas:
-            self.carrierGas = idx
+        # if this component is the carrier gas, update the CarrierGas attribute
+        if CarrierGas:
+            self.CarrierGas = idx
 
         self.components.append(comp)
 
@@ -95,7 +108,7 @@ class Components:
         Returns:
             list[str]: List of labels for all components.
         """
-        return [f"{comp.name} (y_i={comp.gasPhaseMolFraction})" for comp in self.components]
+        return [f"{comp.MoleculeName} (y_i={comp.GasPhaseMolFraction})" for comp in self.components]
 
 
 class Fitting:
@@ -125,23 +138,23 @@ class Fitting:
 
     def __init__(self,
                  components: Components,
-                 pressureScale: Literal["log", "linear"] = "log",
-                 displayName: str = "Column"):
+                 PressureScale: Literal["log", "linear"] = "log",
+                 DisplayName: str = "Column"):
         """
         Initialize an instance of Fitting class.
 
         Parameters:
             components (Components): An instance of the Components class.
             fullData (list): Full data for fitting.
-            pressureScale (str, optional): The scale for pressure: "log", "linear", defaults to "log".
-            displayName (str, optional): The name to be displayed, defaults to "Column".
+            PressureScale (str, optional): The scale for pressure: "log", "linear", defaults to "log".
+            DisplayName (str, optional): The name to be displayed, defaults to "Column".
         """
         self.components = components
         self.data = None
-        self.displayName = displayName
+        self.DisplayName = DisplayName
 
         # create cpp object
-        self.Fitting = _ruptura.Fitting(displayName, components.components, pressureScales[pressureScale])
+        self.Fitting = _ruptura.Fitting(DisplayName, components.components, pressureScales[PressureScale])
 
     def compute(self, data: list[list[tuple]]) -> np.ndarray:
         """
@@ -170,7 +183,7 @@ class Fitting:
 
         loadings = self.Fitting.evaluate(p)
         ax.set_xscale("log")
-        ax.set_title(self.displayName)
+        ax.set_title(self.DisplayName)
         ax.set_xlabel(self.ax_labels[ixlabel])
         ax.set_ylabel(self.ax_labels[iylabel])
 
@@ -202,14 +215,14 @@ class MixturePrediction:
     def __init__(
         self,
         components: Components,
-        displayName: str = "Column",
-        temperature: float = 433.0,
-        pressureStart: float = -1.0,
-        pressureEnd: float = -1.0,
-        numberOfPressurePoints: int = 100,
-        pressureScale: Literal["log", "linear"] = "log",
-        predictionMethod: Literal["IAST", "SIAST", "EI", "SEI"] = "IAST",
-        iastMethod: Literal["FastIAST", "NestedLoopBisection"] = "FastIAST",
+        DisplayName: str = "Column",
+        Temperature: float = 433.0,
+        PressureStart: float = -1.0,
+        PressureEnd: float = -1.0,
+        NumberOfPressurePoints: int = 100,
+        PressureScale: Literal["log", "linear"] = "log",
+        PredictionMethod: Literal["IAST", "SIAST", "EI", "SEI"] = "IAST",
+        MixturePredictionMethod: Literal["FastIAST", "NestedLoopBisection"] = "FastIAST",
     ):
         """
         Initialize the MixturePrediction class with various properties.
@@ -218,49 +231,49 @@ class MixturePrediction:
         -----------
         components: Components
             The components involved in the mixture.
-        displayName: str
+        DisplayName: str
             Name to be displayed for the column (default is "Column").
-        temperature: float
+        Temperature: float
             Temperature for the prediction (default is 433.0 K).
-        pressureStart: float
+        PressureStart: float
             Starting pressure point (default is -1.0).
-        pressureEnd: float
+        PressureEnd: float
             Ending pressure point (default is -1.0).
-        numberOfPressurePoints: int
+        NumberOfPressurePoints: int
             Number of pressure points to consider (default is 100).
-        pressureScale: str
+        PressureScale: str
             Scale of pressure: 'log' or 'linear' (default is 'log').
-        predictionMethod: str
+        PredictionMethod: str
             Method of prediction: 'IAST', 'SIAST', 'EI', 'SEI' (default is 'IAST').
-        iastMethod: str
+        MixturePredictionMethod: str
             IAST Method: 'FastIAST' or 'NestedLoopBisection' (default is 'FastIAST').
         """
         # set shape attribute
-        self.shape = (numberOfPressurePoints, len(components.components), 6)
-        self.displayName=displayName
+        self.shape = (NumberOfPressurePoints, len(components.components), 6)
+        self.DisplayName=DisplayName
 
         # select method integers (enum)
-        pressureScale = pressureScales[pressureScale]
-        predictionMethod = {"IAST": 0, "SIAST": 1, "EI": 2, "SEI": 3}[predictionMethod]
-        iastMethod = {"FastIAST": 0, "NestedLoopBisection": 1}[iastMethod]
+        PressureScale = pressureScales[PressureScale]
+        PredictionMethod = {"IAST": 0, "SIAST": 1, "EI": 2, "SEI": 3}[PredictionMethod]
+        MixturePredictionMethod = {"FastIAST": 0, "NestedLoopBisection": 1}[MixturePredictionMethod]
         self.components = components
 
         # on carriergas: ruptura first checks if the numberOfCarrierGases is 0 or more. more is
-        # always 1, as carrierGasComponent is size_t. if the carriergas is notpresent, set
+        # always 1, as CarrierGasComponent is size_t. if the carriergas is notpresent, set
         # component to 0 (default), it is not checked.
 
         self.MixturePrediction = _ruptura.MixturePrediction(
-            displayName,
+            DisplayName,
             components.components,
-            1 if components.carrierGas is not None else 0,
-            components.carrierGas or 0,
-            temperature,
-            pressureStart,
-            pressureEnd,
-            numberOfPressurePoints,
-            pressureScale,
-            predictionMethod,
-            iastMethod,
+            1 if components.CarrierGas is not None else 0,
+            components.CarrierGas or 0,
+            Temperature,
+            PressureStart,
+            PressureEnd,
+            NumberOfPressurePoints,
+            PressureScale,
+            PredictionMethod,
+            MixturePredictionMethod,
         )
         self.data = None
 
@@ -301,7 +314,7 @@ class MixturePrediction:
             raise ValueError("Data not computed yet")
 
         # set axes
-        ax.set_title(self.displayName + f" ({plot_type})")
+        ax.set_title(self.DisplayName + f" ({plot_type})")
         ax.set_xlabel("Total bulk fluid phase fugacity, f/Pa")
         ylabel = {
             "pure": "Absolute loading q_i",
@@ -340,84 +353,79 @@ class Breakthrough:
     def __init__(
         self,
         components: Components,
-        displayName: str = "Column",
-        temperature: float = 433.0,
-        numberOfTimeSteps: Union[int, Literal["auto"]] = "auto",
-        numberOfGridPoints: int = 100,
-        printEvery: int = 10000,
-        writeEvery: int = 10000,
-        totalPressure: float = 1e6,
-        columnVoidFraction: float = 0.4,
-        pressureGradient: float = 0.0,
-        particleDensity: float = 1e3,
-        columnEntranceVelocity: float = 0.1,
-        columnLength: float = 0.3,
-        timeStep: float = 5e-4,
-        pulseTime: float = None,
+        DisplayName: str = "Column",
+        Temperature: float = 433.0,
+        NumberOfTimeSteps: Union[int, Literal["auto"]] = "auto",
+        NumberOfGridPoints: int = 100,
+        PrintEvery: int = 10000,
+        WriteEvery: int = 10000,
+        TotalPressure: float = 1e6,
+        ColumnVoidFraction: float = 0.4,
+        PressureGradient: float = 0.0,
+        ParticleDensity: float = 1e3,
+        ColumnEntranceVelocity: float = 0.1,
+        ColumnLength: float = 0.3,
+        TimeStep: float = 5e-4,
+        PulseTime: float = None,
     ):
         """
         Initializes the Breakthrough object.
 
         Parameters:
             components (Components): An object containing the components of the gas mixture.
-            displayName (str, optional): The display name of the column. Defaults to "Column".
-            temperature (float, optional): The temperature of the column. Defaults to 433.0.
-            numberOfTimeSteps (Union[int, str], optional): The number of time steps for the prediction model. Can be integer or "auto". Defaults to "auto".
-            numberOfGridPoints (int, optional): The number of grid points along the column. Defaults to 100.
-            printEvery (int, optional): Frequency of prints. Defaults to 10000.
-            writeEvery (int, optional): Frequency of writes. Defaults to 10000.
-            totalPressure (float, optional): Total pressure in the column. Defaults to 1e6.
-            columnVoidFraction (float, optional): Void fraction of the column. Defaults to 0.4.
-            pressureGradient (float, optional): Pressure gradient in the column. Defaults to 0.0.
-            particleDensity (float, optional): Density of particles in the column. Defaults to 1e3.
-            columnEntranceVelocity (float, optional): Velocity of column entrance. Defaults to 0.1.
-            columnLength (float, optional): Length of the column. Defaults to 0.3.
-            timeStep (float, optional): Time step for the prediction model. Defaults to 5e-4.
-            pulseTime (float, optional): Pulse time for the prediction model. If it's None, there is no pulse. Defaults to None.
+            DisplayName (str, optional): The display name of the column. Defaults to "Column".
+            Temperature (float, optional): The Temperature of the column. Defaults to 433.0.
+            NumberOfTimeSteps (Union[int, str], optional): The number of time steps for the prediction model. Can be integer or "auto". Defaults to "auto".
+            NumberOfGridPoints (int, optional): The number of grid points along the column. Defaults to 100.
+            PrintEvery (int, optional): Frequency of prints. Defaults to 10000.
+            WriteEvery (int, optional): Frequency of writes. Defaults to 10000.
+            TotalPressure (float, optional): Total pressure in the column. Defaults to 1e6.
+            ColumnVoidFraction (float, optional): Void fraction of the column. Defaults to 0.4.
+            PressureGradient (float, optional): Pressure gradient in the column. Defaults to 0.0.
+            ParticleDensity (float, optional): Density of particles in the column. Defaults to 1e3.
+            ColumnEntranceVelocity (float, optional): Velocity of column entrance. Defaults to 0.1.
+            ColumnLength (float, optional): Length of the column. Defaults to 0.3.
+            TimeStep (float, optional): Time step for the prediction model. Defaults to 5e-4.
+            PulseTime (float, optional): Pulse time for the prediction model. If it's None, there is no pulse. Defaults to None.
         """
 
         # set attributes
         self.components = components
+        self.DisplayName = DisplayName
         self.data = None
-        self.shape = (
-            numberOfTimeSteps // writeEvery,
-            numberOfGridPoints,
-            len(components.components) + 1,
-            6,
-        )
-
+        
         # determine number of timesteps and set autosteps flag
-        autoSteps = numberOfTimeSteps == "auto"
-        numberOfTimeSteps = 0 if numberOfTimeSteps == "auto" else int(numberOfTimeSteps)
+        autoSteps = NumberOfTimeSteps == "auto"
+        NumberOfTimeSteps = 0 if NumberOfTimeSteps == "auto" else int(NumberOfTimeSteps)
 
         # determine pulsetime and pulse flag
-        pulse = pulseTime is not None
-        pulseTime = 0 if pulseTime is None else pulseTime
+        pulse = PulseTime is not None
+        PulseTime = 0 if PulseTime is None else PulseTime
 
         # create mixtureprediction object
-        carrierGas = components.carrierGas if components.carrierGas else 0
-        mix = MixturePrediction(displayName=displayName, temperature=temperature, components=components)
+        CarrierGas = components.CarrierGas if components.CarrierGas else 0
+        mix = MixturePrediction(DisplayName=DisplayName, Temperature=Temperature, components=components)
 
         # create breakthrough cpp object
         self.Breakthrough = _ruptura.Breakthrough(
-            displayName,
+            DisplayName,
             components.components,
-            carrierGas,
-            numberOfGridPoints,
-            printEvery,
-            writeEvery,
-            temperature,
-            totalPressure,
-            columnVoidFraction,
-            pressureGradient,
-            particleDensity,
-            columnEntranceVelocity,
-            columnLength,
-            timeStep,
-            numberOfTimeSteps,
+            CarrierGas,
+            NumberOfGridPoints,
+            PrintEvery,
+            WriteEvery,
+            Temperature,
+            TotalPressure,
+            ColumnVoidFraction,
+            PressureGradient,
+            ParticleDensity,
+            ColumnEntranceVelocity,
+            ColumnLength,
+            TimeStep,
+            NumberOfTimeSteps,
             autoSteps,
             pulse,
-            pulseTime,
+            PulseTime,
             mix.MixturePrediction,
         )
 
@@ -468,3 +476,4 @@ class Breakthrough:
                 ax.scatter(x, self.data[:, -1, 8 + comp * 6], label=labels[comp], marker=getMarker(comp), s=8.0)
 
         ax.legend()
+        ax.set_title(f"{self.DisplayName} ({plot_type})")

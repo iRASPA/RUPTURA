@@ -17,8 +17,8 @@ PYBIND11_MODULE(_ruptura, m)
 {
   py::class_<Component>(m, "Component")
       .def(py::init<size_t, std::string, std::vector<Isotherm>, double, double, double, bool>())
-      .def_readonly("gasPhaseMolFraction", &Component::Yi0)
-      .def_readonly("name", &Component::name)
+      .def_readonly("GasPhaseMolFraction", &Component::Yi0)
+      .def_readonly("MoleculeName", &Component::name)
       .def("__repr__", &Component::repr);
   py::class_<Isotherm>(m, "Isotherm")
       .def(py::init<std::string, std::vector<double>, size_t>())

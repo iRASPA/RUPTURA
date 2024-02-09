@@ -16,7 +16,7 @@ for fn in sys.argv[1:]:
     name = fn.rstrip()
     components.addComponent(
         name = name,
-        gasPhaseMolFraction=1.0,
+        GasPhaseMolFraction=1.0,
         isotherms = [["Bingel-Walton", 0.0, 0.0, 0.0]]
     )
     print(np.genfromtxt(fn).shape)
@@ -24,7 +24,7 @@ for fn in sys.argv[1:]:
 
 fitting = ruptura.Fitting(
     components=components,
-    displayName="CoBDP",
+    DisplayName="CoBDP",
 )
 
 fitting.compute(loadings)

@@ -2,10 +2,15 @@ import ruptura
 import matplotlib.pyplot as plt
 
 components = ruptura.Components([{
+    "MoleculeName": "Helium",
+    "CarrierGas": True,
+    "GasPhaseMolFraction": 0.9,
+    "isotherms": []
+}, {
     "MoleculeName":
         "nC4",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -16,7 +21,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "2mC3",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -27,7 +32,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "nC5",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -38,7 +43,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "2mC4",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -47,7 +52,7 @@ components = ruptura.Components([{
                   ["Langmuir-Freundlich", 0.771593, 4.05931e-05, 0.927118]]
 }, {
     "MoleculeName": "22dmC3",
-    "GasPhaseMolFraction": 0.06666666666667,
+    "GasPhaseMolFraction": 0.00625,
     "MassTransferCoefficient": 0.06,
     "AxialDispersionCoefficient": 0.0,
     "isotherms": [["Langmuir-Freundlich", 0.690561, 5.13286e-08, 1.0147]]
@@ -55,7 +60,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "nC6",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -66,7 +71,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "2MP",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -77,7 +82,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "3MP",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -88,7 +93,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "23DMB",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -99,7 +104,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "22DMB",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -110,7 +115,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "nC7",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -121,7 +126,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "2MH",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -132,7 +137,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "3MH",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -141,7 +146,7 @@ components = ruptura.Components([{
                   ["Langmuir-Freundlich", 0.492039, 0.00563881, 0.341391]]
 }, {
     "MoleculeName": "23DMP",
-    "GasPhaseMolFraction": 0.06666666666667,
+    "GasPhaseMolFraction": 0.00625,
     "MassTransferCoefficient": 0.06,
     "AxialDispersionCoefficient": 0.0,
     "isotherms": [["Langmuir-Freundlich", 0.983143, 1.98894e-05, 0.78231]]
@@ -149,7 +154,18 @@ components = ruptura.Components([{
     "MoleculeName":
         "22DMP",
     "GasPhaseMolFraction":
-        0.06666666666667,
+        0.00625,
+    "MassTransferCoefficient":
+        0.06,
+    "AxialDispersionCoefficient":
+        0.0,
+    "isotherms": [["Langmuir-Freundlich", 0.673428, 4.69463e-10, 1.27279],
+                  ["Langmuir-Freundlich", 0.428088, 3.8364e-10, 0.888983]]
+}, {
+    "MoleculeName":
+        "22DMP",
+    "GasPhaseMolFraction":
+        0.00625,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -158,16 +174,20 @@ components = ruptura.Components([{
                   ["Langmuir-Freundlich", 0.428088, 3.8364e-10, 0.888983]]
 }])
 
-mix = ruptura.MixturePrediction(components=components,
-                                DisplayName="ZIF-77",
-                                Temperature=443.0,
-                                PressureStart=1e0,
-                                PressureEnd=1e6,
-                                NumberOfPressurePoints=100,
-                                PressureScale="log")
+brk = ruptura.Breakthrough(
+    components=components,
+    DisplayName="ZIF-77",
+    Temperature=443.0,
+    ParticleDensity=1552.86,
+    TotalPressure=3.0e6,
+    PressureGradient=0.0,
+    ColumnEntranceVelocity=0.1,
+    ColumnLength=0.3,
+    NumberOfTimeSteps="auto",
+    TimeStep=5e-4,
+)
 
-data = mix.compute()
-fig, ax = plt.subplots(1, 2, figsize=(8, 6))
-mix.plot(ax[0], "pure")
-mix.plot(ax[1], "mixture")
+data = brk.compute()
+fig, ax = plt.subplots(figsize=(8,6))
+brk.plot(ax, "breakthrough")
 plt.show()
