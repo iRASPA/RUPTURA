@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
 #include "multi_site_isotherm.h"
 
@@ -21,3 +22,5 @@ struct Component
 
   std::string repr() const;
 };
+
+std::vector<Component>& normalize_molfracs(std::vector<Component>& components);

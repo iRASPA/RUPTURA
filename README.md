@@ -60,17 +60,32 @@ David Dubbeldam,        University of Amsterdam, The Netherlands<br>
 
 Compilation
 ===========
+```
 cd src<br>
 make 
+```
 
 to clean:<br>
+```
 make clean
+```
 
 Running
 =======
+```
 cd examples/Silicalite-CO2-N2/breakthrough/Langmuir<br>
 ./run
+```
 
 Input
 =====
 See the cited article.
+
+Python Installation
+======
+Ruptura can be used of python through `src/ruptura.py`, examples can be found in the examples directory.
+The python package can be installed with:
+
+```
+pip install .
+```

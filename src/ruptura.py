@@ -108,7 +108,7 @@ class Components:
         Returns:
             list[str]: List of labels for all components.
         """
-        return [f"{comp.MoleculeName} (y_i={comp.GasPhaseMolFraction})" for comp in self.components]
+        return [f"{comp.MoleculeName} (y_i={comp.GasPhaseMolFraction:3.2e})" for comp in self.components]
 
 
 class Fitting:
@@ -333,7 +333,7 @@ class MixturePrediction:
             ax.scatter(self.data[:, comp, 0],
                        self.data[:, comp, select],
                        label=labels[comp],
-                       marker=markers[comp],
+                       marker=getMarker(comp),
                        s=8.0)
         ax.legend()
 

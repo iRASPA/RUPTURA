@@ -96,7 +96,7 @@ Breakthrough::Breakthrough(std::string _displayName, std::vector<Component> _com
                            double _timeStep, size_t _numberOfTimeSteps, bool _autoSteps, bool _pulse, double _pulseTime,
                            const MixturePrediction _mixture)
     : displayName(_displayName),
-      components(_components),
+      components(normalize_molfracs(_components)),
       carrierGasComponent(_carrierGasComponent),
       Ncomp(_components.size()),
       Ngrid(_numberOfGridPoints),

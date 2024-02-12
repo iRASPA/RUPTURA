@@ -33,3 +33,17 @@ std::string Component::repr() const
     }
     return s;
 }
+
+std::vector<Component>& normalize_molfracs(std::vector<Component>& components)
+{
+  double total = 0;
+  for (auto comp : components)
+  {
+    total += comp.Yi0;
+  }
+  for (auto comp : components)
+  {
+    comp.Yi0 /= total;
+  }
+  return components;
+}

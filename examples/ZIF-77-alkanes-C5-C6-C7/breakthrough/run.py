@@ -10,7 +10,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "nC4",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -21,7 +21,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "2mC3",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -32,7 +32,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "nC5",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -43,7 +43,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "2mC4",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -52,7 +52,7 @@ components = ruptura.Components([{
                   ["Langmuir-Freundlich", 0.771593, 4.05931e-05, 0.927118]]
 }, {
     "MoleculeName": "22dmC3",
-    "GasPhaseMolFraction": 0.00625,
+    "GasPhaseMolFraction": 0.0066667,
     "MassTransferCoefficient": 0.06,
     "AxialDispersionCoefficient": 0.0,
     "isotherms": [["Langmuir-Freundlich", 0.690561, 5.13286e-08, 1.0147]]
@@ -60,7 +60,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "nC6",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -71,7 +71,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "2MP",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -82,7 +82,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "3MP",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -93,7 +93,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "23DMB",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -104,7 +104,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "22DMB",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -115,7 +115,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "nC7",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -126,7 +126,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "2MH",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -137,7 +137,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "3MH",
     "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
@@ -146,7 +146,7 @@ components = ruptura.Components([{
                   ["Langmuir-Freundlich", 0.492039, 0.00563881, 0.341391]]
 }, {
     "MoleculeName": "23DMP",
-    "GasPhaseMolFraction": 0.00625,
+    "GasPhaseMolFraction": 0.0066667,
     "MassTransferCoefficient": 0.06,
     "AxialDispersionCoefficient": 0.0,
     "isotherms": [["Langmuir-Freundlich", 0.983143, 1.98894e-05, 0.78231]]
@@ -154,18 +154,7 @@ components = ruptura.Components([{
     "MoleculeName":
         "22DMP",
     "GasPhaseMolFraction":
-        0.00625,
-    "MassTransferCoefficient":
-        0.06,
-    "AxialDispersionCoefficient":
-        0.0,
-    "isotherms": [["Langmuir-Freundlich", 0.673428, 4.69463e-10, 1.27279],
-                  ["Langmuir-Freundlich", 0.428088, 3.8364e-10, 0.888983]]
-}, {
-    "MoleculeName":
-        "22DMP",
-    "GasPhaseMolFraction":
-        0.00625,
+        0.0066667,
     "MassTransferCoefficient":
         0.06,
     "AxialDispersionCoefficient":
