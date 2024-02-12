@@ -15,7 +15,7 @@ if len(sys.argv) < 2:
 for fn in sys.argv[1:]:
     with open(fn, 'r') as f:
         name = f.readline().split(" ")[1]
-    components.addComponent(name=name, GasPhaseMolFraction=1.0, isotherms=[["Toth", 0.0, 0.0, 0.0]])
+    components.addComponent(MoleculeName=name, GasPhaseMolFraction=1.0, isotherms=[["Toth", 0.0, 0.0, 0.0]])
     loadings.append([(x, y) for x, y in np.genfromtxt(fn)[:, select]])
 
 fitting = ruptura.Fitting(

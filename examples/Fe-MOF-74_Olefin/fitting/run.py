@@ -15,7 +15,7 @@ if len(sys.argv) < 2:
 for fn in sys.argv[1:]:
     name = fn.split(".")[0]
     components.addComponent(
-        name = name,
+        MoleculeName = name,
         GasPhaseMolFraction=1.0,
         isotherms = [["Langmuir-Freundlich", 0.0, 0.0, 0.0], ["Langmuir-Freundlich", 0.0, 0.0, 0.0], ["Langmuir-Freundlich", 0.0, 0.0, 0.0]]
     )

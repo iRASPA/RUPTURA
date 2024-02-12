@@ -16,7 +16,7 @@ for fn in sys.argv[1:]:
     with open(fn, 'r') as f:
         name = f.readline().split(" ")[3].rstrip("\n")
     components.addComponent(
-        name = name,
+        MoleculeName = name,
         GasPhaseMolFraction=1.0,
         isotherms = [["Langmuir-Freundlich", 0.0, 0.0, 0.0], ["Langmuir-Freundlich", 0.0, 0.0, 0.0]]
     )

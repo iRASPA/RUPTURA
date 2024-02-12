@@ -15,7 +15,7 @@ if len(sys.argv) < 2:
 for fn in sys.argv[1:]:
     name = fn.rstrip()
     components.addComponent(
-        name = name,
+        MoleculeName = name,
         GasPhaseMolFraction=1.0,
         isotherms = [["Bingel-Walton", 0.0, 0.0, 0.0]]
     )
