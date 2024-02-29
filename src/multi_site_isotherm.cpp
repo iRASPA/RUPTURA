@@ -4,13 +4,15 @@
 #include <sstream>
 #include <cmath>
 
-void MultiSiteIsotherm::print() const
+std::string MultiSiteIsotherm::repr() const
 {
-  std::cout << "    number of isotherm sites:  " << numberOfSites << "\n";
-  for(size_t i = 0; i < numberOfSites; ++i)
+  std::string s;
+  s += "    number of isotherm sites:  " + std::to_string(numberOfSites) + "\n";
+  for (size_t i = 0; i < numberOfSites; ++i)
   {
-    sites[i].print();
+    s += sites[i].repr();
   }
+  return s;
 }
 
 void MultiSiteIsotherm::add(const Isotherm &isotherm)
@@ -23,6 +25,12 @@ void MultiSiteIsotherm::add(const Isotherm &isotherm)
   {
     parameterIndices.emplace_back(sites.size() - 1, i);
   }
+}
+
+void MultiSiteIsotherm::setParameters(size_t i, double value)
+{
+  std::pair<size_t, size_t> index = parameterIndices[i];
+  sites[index.first].parameters[index.second] = value;
 }
 
 // returns the inverse-pressure (1/P) that corresponds to the given reduced_grand_potential psi

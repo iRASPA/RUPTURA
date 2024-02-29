@@ -69,6 +69,7 @@ CMakeLists.txt.user*
 *.user
 *.userosscache
 *.sln.docstates
+.vscode/
 
 # Build results
 [Dd]ebug/
@@ -154,3 +155,10 @@ ipch/
 *-blx.aux
 *-blx.bib
 *.run.xml
+
+# Python files
+build
+**/*.egg-info
+**/__pycache__
+**/*.pyc
+**/*cpython*

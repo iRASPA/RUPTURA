@@ -10,6 +10,12 @@
 #include "component.h"
 #include "multi_site_isotherm.h"
 
+#ifdef PYBUILD
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+#endif  // PYBUILD
+
 struct Fitting
 {
   struct DNA
@@ -36,9 +42,9 @@ struct Fitting
   };
 
   Fitting(const InputReader &inputreader);
+  Fitting(std::string _displayName, std::vector<Component> _components, size_t _pressureScale);
 
   void readData(size_t ID);
-  void printSolution(size_t ID);
   void run();
   void createPlotScripts(const DNA &citizen, size_t ID);
   void createPlotScript();
@@ -61,9 +67,8 @@ struct Fitting
 
   size_t Ncomp;
   std::string displayName;
-  std::vector<std::string> componentName;
+  std::vector<Component> components;
   std::vector<std::string> filename;
-  std::vector<MultiSiteIsotherm> isotherms;
   size_t columnPressure{ 0 };
   size_t columnLoading{ 1 };
   size_t columnError{ 2 };
@@ -92,4 +97,10 @@ struct Fitting
   std::vector<DNA> popBeta;
   std::vector<DNA> &parents;
   std::vector<DNA> &children;
+
+#ifdef PYBUILD
+  void selectData(size_t ID, std::vector<std::vector<std::pair<double, double>>> data);
+  std::vector<double> compute(std::vector<std::vector<std::pair<double, double>>> data);
+  py::array_t<double> evaluate(std::vector<double> pressure);
+#endif
 };

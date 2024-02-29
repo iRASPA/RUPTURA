@@ -6,19 +6,35 @@
 #include "inputreader.h"
 #include "mixture_prediction.h"
 
+#ifdef PYBUILD
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+#endif  // PYBUILD
+
 struct Breakthrough
 {
   public:
     Breakthrough(const InputReader &inputreader);
+    Breakthrough(std::string _displayName, std::vector<Component> _components, size_t _carrierGasComponent,
+                 size_t _numberOfGridPoints, size_t _printEvery, size_t _writeEvery, double _temperature,
+                 double _p_total, double _columnVoidFraction, double _pressureGradient, double _particleDensity,
+                 double _columnEntranceVelocity, double _columnLength, double _timeStep, size_t _numberOfTimeSteps,
+                 bool _autoSteps, bool _pulse, double _pulseTime, const MixturePrediction _mixture);
 
-    void print() const;
+    std::string repr() const;
     void initialize();
     void run();
+    void computeStep(size_t step);
 
     void createPlotScript();
     void createMovieScripts();
 
-  private:
+#ifdef PYBUILD
+    py::array_t<double> compute();
+#endif  // PYBUILD
+
+   private:
     const std::string displayName;
     const std::vector<Component> components;
     size_t carrierGasComponent{ 0 }; 

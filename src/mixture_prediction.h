@@ -6,6 +6,12 @@
 #include "inputreader.h"
 #include "component.h"
 
+#ifdef PYBUILD
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+#endif  // P
+
 class MixturePrediction
 {
   public:
@@ -24,9 +30,15 @@ class MixturePrediction
     };
 
     MixturePrediction(const InputReader &inputreader);
+    MixturePrediction(std::string _displayName, std::vector<Component> _components, size_t _numberOfCarrierGases,
+                      size_t _carrierGasComponent, double _temperature, double _pressureStart, double _pressureEnd,
+                      size_t _numberOfPressurePoints, size_t _pressureScale, size_t _predictionMethod,
+                      size_t _iastMethod);
 
-    void print() const;
+    std::string repr() const;
+    void sortComponents();
     void run();
+    std::vector<double> initPressures();
     void createPureComponentsPlotScript();
     void createMixturePlotScript();
     void createMixtureAdsorbedMolFractionPlotScript();
@@ -43,7 +55,14 @@ class MixturePrediction
                                              double *cachedP0,
                                              double *cachedPsi);
 
-  private:
+    // keep this non private for breakthrough
+    size_t maxIsothermTerms;
+
+#ifdef PYBUILD
+    py::array_t<double> compute();
+#endif  // PYBUILD
+
+   private:
     std::string displayName;
     const std::vector<Component> components;
     std::vector<Component> sortedComponents;
@@ -53,7 +72,6 @@ class MixturePrediction
     size_t carrierGasComponent;
     PredictionMethod predictionMethod;
     IASTMethod iastMethod;
-    size_t maxIsothermTerms;
     std::vector<std::vector<Component>> segregatedSortedComponents;
 
     std::vector<double> alpha1;

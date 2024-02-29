@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <array>
 #include <vector>
+#include <map>
 #define _USE_MATH_DEFINES
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
    #include <math.h>
@@ -46,13 +47,31 @@ struct Isotherm
     BingelWalton = 13
   };
 
+  std::map<std::string, Type> isotherm_map = {
+      {"Langmuir", Type::Langmuir},
+      {"Anti-Langmuir", Type::Anti_Langmuir},
+      {"BET", Type::BET},
+      {"Henry", Type::Henry},
+      {"Freundlich", Type::Freundlich},
+      {"Sips", Type::Sips},
+      {"Langmuir-Freundlich", Type::Langmuir_Freundlich},
+      {"Redlich-Peterson", Type::Redlich_Peterson},
+      {"Toth", Type::Toth},
+      {"Unilan", Type::Unilan},
+      {"OBrien_Myers", Type::OBrien_Myers},
+      {"Quadratic", Type::Quadratic},
+      {"Temkin", Type::Temkin},
+      {"Bingel-Walton", Type::BingelWalton},
+  };
+
   Isotherm(Isotherm::Type type, const std::vector<double> &values, size_t numberOfValues);
+  Isotherm(std::string type, const std::vector<double> &values, size_t numberOfValues);
 
   Isotherm::Type type;
   std::vector<double> parameters;
   size_t numberOfParameters;
 
-  void print() const;
+  std::string repr() const;
 
   inline double value(double pressure) const
   {

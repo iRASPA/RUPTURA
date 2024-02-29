@@ -22,35 +22,56 @@
   #include <sys/stat.h>
 #endif
 
+#ifdef PYBUILD
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+#endif  // PYBUILDa
 
-Fitting::Fitting(const InputReader &inputreader):
-  Ncomp(inputreader.components.size()),
-  displayName(inputreader.displayName),
-  componentName(Ncomp),
-  filename(Ncomp),
-  isotherms(Ncomp),
-  columnPressure(inputreader.columnPressure - 1),
-  columnLoading(inputreader.columnLoading - 1),
-  columnError(inputreader.columnError - 1),
-  pressureScale(PressureScale(inputreader.pressureScale)),
-  GA_Size(static_cast<size_t>(std::pow(2.0, 12.0))),
-  GA_MutationRate( 1.0/3.0 ),
-  GA_EliteRate( 0.15 ),
-  GA_MotleyCrowdRate( 0.25 ),
-  GA_DisasterRate( 0.001 ),
-  GA_Elitists( static_cast<size_t>(static_cast<double>(GA_Size) * GA_EliteRate) ),
-  GA_Motleists( static_cast<size_t>(static_cast<double>(GA_Size) * (1.0 - GA_MotleyCrowdRate)) ),
-  popAlpha(static_cast<size_t>(std::pow(2.0, 12.0))),
-  popBeta(static_cast<size_t>(std::pow(2.0, 12.0))),
-  parents(popAlpha),
-  children(popBeta)
+Fitting::Fitting(const InputReader &inputreader)
+    : Ncomp(inputreader.components.size()),
+      displayName(inputreader.displayName),
+      components(inputreader.components),
+      filename(Ncomp),
+      columnPressure(inputreader.columnPressure - 1),
+      columnLoading(inputreader.columnLoading - 1),
+      columnError(inputreader.columnError - 1),
+      pressureScale(PressureScale(inputreader.pressureScale)),
+      GA_Size(static_cast<size_t>(std::pow(2.0, 12.0))),
+      GA_MutationRate(1.0 / 3.0),
+      GA_EliteRate(0.15),
+      GA_MotleyCrowdRate(0.25),
+      GA_DisasterRate(0.001),
+      GA_Elitists(static_cast<size_t>(static_cast<double>(GA_Size) * GA_EliteRate)),
+      GA_Motleists(static_cast<size_t>(static_cast<double>(GA_Size) * (1.0 - GA_MotleyCrowdRate))),
+      popAlpha(static_cast<size_t>(std::pow(2.0, 12.0))),
+      popBeta(static_cast<size_t>(std::pow(2.0, 12.0))),
+      parents(popAlpha),
+      children(popBeta)
 {
   for(size_t i = 0 ; i < Ncomp; ++i)
   {
-    componentName[i] = inputreader.components[i].name;
     filename[i] = inputreader.components[i].filename;
-    isotherms[i] = inputreader.components[i].isotherm;
   }
+}
+
+Fitting::Fitting(std::string _displayName, std::vector<Component> _components, size_t _pressureScale)
+    : Ncomp(_components.size()),
+      displayName(_displayName),
+      components(_components),
+      pressureScale(PressureScale(_pressureScale)),
+      GA_Size(static_cast<size_t>(std::pow(2.0, 12.0))),
+      GA_MutationRate(1.0 / 3.0),
+      GA_EliteRate(0.15),
+      GA_MotleyCrowdRate(0.25),
+      GA_DisasterRate(0.001),
+      GA_Elitists(static_cast<size_t>(static_cast<double>(GA_Size) * GA_EliteRate)),
+      GA_Motleists(static_cast<size_t>(static_cast<double>(GA_Size) * (1.0 - GA_MotleyCrowdRate))),
+      popAlpha(static_cast<size_t>(std::pow(2.0, 12.0))),
+      popBeta(static_cast<size_t>(std::pow(2.0, 12.0))),
+      parents(popAlpha),
+      children(popBeta)
+{
 }
 
 void Fitting::readData(size_t ID)
@@ -119,8 +140,8 @@ void Fitting::readData(size_t ID)
 
   for(size_t i = 0; i < Ncomp; ++i)
   {
-    std::cout << "Number of isotherm parameters: " << isotherms[i].numberOfParameters << std::endl;
-    isotherms[i].print();
+    std::cout << "Number of isotherm parameters: " << components[i].isotherm.numberOfParameters << std::endl;
+    std::cout << components[i].isotherm.repr();
   }
 }
 
@@ -132,7 +153,7 @@ void Fitting::run()
     readData(i);
     const DNA bestCitizen = fit(i);
     const DNA optimizedBestCitizen = simplex(bestCitizen, 1.0);
-    optimizedBestCitizen.phenotype.print();
+    std::cout << optimizedBestCitizen.phenotype.repr();
     createPlotScripts(optimizedBestCitizen, i);
   }
   createPlotScript();
@@ -143,7 +164,7 @@ Fitting::DNA Fitting::newCitizen(size_t ID)
 {
   DNA citizen;
 
-  citizen.phenotype = isotherms[ID].randomized(maximumLoading);
+  citizen.phenotype = components[ID].isotherm.randomized(maximumLoading);
 
   citizen.genotype.clear();
   citizen.genotype.reserve((sizeof(double) * CHAR_BIT) *
@@ -326,7 +347,7 @@ void Fitting::crossover(size_t ID, size_t s1,size_t s2, size_t i1, size_t i2, si
       // --------------------
     {
       // remove the extreme values 0 and 32*Npar - 1 (they are not valid for crossover)
-      size_t bitStringSize = (sizeof(double) * CHAR_BIT) * isotherms[ID].numberOfParameters;
+      size_t bitStringSize = (sizeof(double) * CHAR_BIT) * components[ID].isotherm.numberOfParameters;
       size_t spos = RandomNumber::Integer(1, bitStringSize - 2);
       children[i].genotype = parents[k1].genotype.substr(0, spos) +
                              parents[k2].genotype.substr(spos, bitStringSize - spos);
@@ -345,87 +366,87 @@ void Fitting::crossover(size_t ID, size_t s1,size_t s2, size_t i1, size_t i2, si
       // Two-point crossover:
       // --------------------
       {
-      size_t bitStringSize = (sizeof(double) * CHAR_BIT) * isotherms[ID].numberOfParameters;
-      size_t spos1 = RandomNumber::Integer(1, bitStringSize - 3);
-      size_t spos2 = RandomNumber::Integer(spos1, bitStringSize - 2);
-      children[i].genotype = parents[k1].genotype.substr(0, spos1) +
-                             parents[k2].genotype.substr(spos1, spos2 - spos1) +
-                             parents[k1].genotype.substr(spos2, bitStringSize - spos2);
-      // convert the bit-strings to doubles
-      for(size_t j = 0; j < children[i].phenotype.numberOfParameters; ++j)
-      {
-        size_t pos = j * (sizeof(double) * CHAR_BIT);
-        size_t size = sizeof(double) * CHAR_BIT;
-        std::bitset<sizeof(double) * CHAR_BIT> bitset(children[i].genotype, pos, size);
-        uint64_t p = bitset.to_ullong();
-        std::memcpy(&children[i].phenotype.parameters(j), &p, sizeof(double));
-      }
-    }
-    else if (tmp1 < 0.500)
-    {
-      // Uniform crossover:
-      // ------------------
-      size_t bitStringSize = (sizeof(double) * CHAR_BIT) * isotherms[ID].numberOfParameters;
-      size_t rolling_k = k1;
-      for (size_t j = 0; j < bitStringSize; j++)
-      {
-        if(RandomNumber::Uniform() < 0.25 )
+        size_t bitStringSize = (sizeof(double) * CHAR_BIT) * components[ID].isotherm.numberOfParameters;
+        size_t spos1 = RandomNumber::Integer(1, bitStringSize - 3);
+        size_t spos2 = RandomNumber::Integer(spos1, bitStringSize - 2);
+        children[i].genotype = parents[k1].genotype.substr(0, spos1) +
+                               parents[k2].genotype.substr(spos1, spos2 - spos1) +
+                               parents[k1].genotype.substr(spos2, bitStringSize - spos2);
+        // convert the bit-strings to doubles
+        for (size_t j = 0; j < children[i].phenotype.numberOfParameters; ++j)
         {
-           if(rolling_k == k1)
-           {
-             rolling_k = k2; 
-           }
-           else
-           {
-             rolling_k = k1;
-           }
+          size_t pos = j * (sizeof(double) * CHAR_BIT);
+          size_t size = sizeof(double) * CHAR_BIT;
+          std::bitset<sizeof(double) * CHAR_BIT> bitset(children[i].genotype, pos, size);
+          uint64_t p = bitset.to_ullong();
+          std::memcpy(&children[i].phenotype.parameters(j), &p, sizeof(double));
         }
-        children[i].genotype.substr(j,1) = parents[rolling_k].genotype.substr(j,1);
       }
-      // convert the bit-strings to doubles
-      for(size_t j = 0; j < children[i].phenotype.numberOfParameters; ++j)
+      else if (tmp1 < 0.500)
       {
-        size_t pos = j * (sizeof(double) * CHAR_BIT);
-        size_t size = sizeof(double) * CHAR_BIT;
-        std::bitset<sizeof(double) * CHAR_BIT> bitset(children[i].genotype, pos, size);
-        uint64_t p = bitset.to_ullong();
-        std::memcpy(&children[i].phenotype.parameters(j), &p, sizeof(double));
+        // Uniform crossover:
+        // ------------------
+        size_t bitStringSize = (sizeof(double) * CHAR_BIT) * components[ID].isotherm.numberOfParameters;
+        size_t rolling_k = k1;
+        for (size_t j = 0; j < bitStringSize; j++)
+        {
+          if (RandomNumber::Uniform() < 0.25)
+          {
+            if (rolling_k == k1)
+            {
+              rolling_k = k2;
+            }
+            else
+            {
+              rolling_k = k1;
+            }
+          }
+          children[i].genotype.substr(j, 1) = parents[rolling_k].genotype.substr(j, 1);
+        }
+        // convert the bit-strings to doubles
+        for (size_t j = 0; j < children[i].phenotype.numberOfParameters; ++j)
+        {
+          size_t pos = j * (sizeof(double) * CHAR_BIT);
+          size_t size = sizeof(double) * CHAR_BIT;
+          std::bitset<sizeof(double) * CHAR_BIT> bitset(children[i].genotype, pos, size);
+          uint64_t p = bitset.to_ullong();
+          std::memcpy(&children[i].phenotype.parameters(j), &p, sizeof(double));
+        }
       }
-    }
-    else
-    {
-      children[i].genotype.clear();
-      for(size_t j = 0; j < children[i].phenotype.numberOfParameters; ++j)
+      else
       {
-        // randomly choose whether the parameter comes from parent k1 or k2
-        if(RandomNumber::Uniform() < 0.5)
+        children[i].genotype.clear();
+        for (size_t j = 0; j < children[i].phenotype.numberOfParameters; ++j)
         {
-          children[i].phenotype.parameters(j) = parents[k1].phenotype.parameters(j);
-        }
-        else 
-        {
-          children[i].phenotype.parameters(j) = parents[k2].phenotype.parameters(j);
-        }
+          // randomly choose whether the parameter comes from parent k1 or k2
+          if (RandomNumber::Uniform() < 0.5)
+          {
+            children[i].phenotype.parameters(j) = parents[k1].phenotype.parameters(j);
+          }
+          else
+          {
+            children[i].phenotype.parameters(j) = parents[k2].phenotype.parameters(j);
+          }
 
-        // convert from double to bitString
-        uint64_t p;
-        std::memcpy(&p, &children[i].phenotype.parameters(j), sizeof(double));
-        std::bitset<sizeof(double) * CHAR_BIT> bitset(p);
-        children[i].genotype += bitset.to_string();
+          // convert from double to bitString
+          uint64_t p;
+          std::memcpy(&p, &children[i].phenotype.parameters(j), sizeof(double));
+          std::bitset<sizeof(double) * CHAR_BIT> bitset(p);
+          children[i].genotype += bitset.to_string();
+        }
       }
-    }
 
-    children[i].hash = std::hash<MultiSiteIsotherm>{}(children[i].phenotype);
+      children[i].hash = std::hash<MultiSiteIsotherm>{}(children[i].phenotype);
   }
 }
 
-void Fitting::chooseRandomly(size_t kk1,size_t kk2,size_t jj1,size_t jj2, size_t &ii1, size_t &ii2)
+void Fitting::chooseRandomly(size_t kk1, size_t kk2, size_t jj1, size_t jj2, size_t &ii1, size_t &ii2)
 {
-  ii1  = RandomNumber::Integer(kk1, kk2);
-  ii2  = RandomNumber::Integer(jj1, jj2);
-  while ( ii1 == ii2 )
+  ii1 = RandomNumber::Integer(kk1, kk2);
+  ii2 = RandomNumber::Integer(jj1, jj2);
+  while (ii1 == ii2)
   {
-    ii2 = RandomNumber::Integer(jj1,jj2);
+    ii2 = RandomNumber::Integer(jj1, jj2);
   };
 }
 
@@ -435,13 +456,15 @@ void Fitting::mate(size_t ID)
   elitism();
 
   // mates from GA_Elitists to (GA_Size - GA_Elitists)
-  crossover(ID, GA_Elitists, GA_Elitists + static_cast<size_t>(static_cast<double>(GA_Motleists) * 0.5), 0, GA_Elitists, 0, GA_Elitists);
-  crossover(ID, GA_Elitists + static_cast<size_t>(static_cast<double>(GA_Motleists) * 0.5) + 1, GA_Size - GA_Elitists, 0, GA_Elitists, GA_Elitists, GA_Size - 1);
+  crossover(ID, GA_Elitists, GA_Elitists + static_cast<size_t>(static_cast<double>(GA_Motleists) * 0.5), 0, GA_Elitists,
+            0, GA_Elitists);
+  crossover(ID, GA_Elitists + static_cast<size_t>(static_cast<double>(GA_Motleists) * 0.5) + 1, GA_Size - GA_Elitists,
+            0, GA_Elitists, GA_Elitists, GA_Size - 1);
 
   // mutation from GA_Elitists to (GA_Size - GA_Elitists) with "GA_MutationRate" probability
-  for(size_t i = GA_Elitists; i < GA_Size - GA_Elitists; ++i)
+  for (size_t i = GA_Elitists; i < GA_Size - GA_Elitists; ++i)
   {
-    if(RandomNumber::Uniform() < GA_MutationRate)
+    if (RandomNumber::Uniform() < GA_MutationRate)
     {
       mutate(children[i]);
     }
@@ -449,68 +472,63 @@ void Fitting::mate(size_t ID)
   }
 
   // replace the last GA_Elitists (the worst) of the children by new children
-  for(size_t i = GA_Size - GA_Elitists; i < GA_Size; ++i)
+  for (size_t i = GA_Size - GA_Elitists; i < GA_Size; ++i)
   {
     children[i] = newCitizen(ID);
   }
 
   // replace the last (GA_Size - 1) children by new children
-  if(RandomNumber::Uniform() < GA_DisasterRate)
+  if (RandomNumber::Uniform() < GA_DisasterRate)
   {
     nuclearDisaster(ID);
   }
 }
 
-bool DNA_Fitness_Sorter(Fitting::DNA const& lhs, Fitting::DNA const& rhs)
-{
-  return lhs.fitness < rhs.fitness;
-}
+bool DNA_Fitness_Sorter(Fitting::DNA const &lhs, Fitting::DNA const &rhs) { return lhs.fitness < rhs.fitness; }
 
-void Fitting::sortByFitness()
-{
-  std::sort(parents.begin(), parents.end(), &DNA_Fitness_Sorter);
-}
+void Fitting::sortByFitness() { std::sort(parents.begin(), parents.end(), &DNA_Fitness_Sorter); }
 
 void Fitting::writeCitizen(size_t citizen, size_t id, size_t step, size_t variety, size_t fullfilledCondition)
 {
-  char info[256]; 
-  if(fullfilledCondition > 0)
+  char info[256];
+  if (fullfilledCondition > 0)
   {
-    snprintf(info, 256, "mol: %2ld  step: %5ld  Fitness: %10.6lf R^2: %10.6lf Similarity: %5ld/%-5ld Finishing: %3ld/%-3d\n",
-            id, step, parents[citizen].fitness,pow(RCorrelation(parents[citizen].phenotype),2), variety, GA_Size, fullfilledCondition, 100);
+    snprintf(info, 256,
+             "mol: %2ld  step: %5ld  Fitness: %10.6lf R^2: %10.6lf Similarity: %5ld/%-5ld Finishing: %3ld/%-3d\n", id,
+             step, parents[citizen].fitness, pow(RCorrelation(parents[citizen].phenotype), 2), variety, GA_Size,
+             fullfilledCondition, 100);
   }
-  else 
+  else
   {
-    snprintf(info, 256, "mol: %2ld  step: %5ld  Fitness: %10.6lf R^2: %10.6lf Similarity: %5ld/%-5ld\n", 
-            id, step, parents[citizen].fitness,pow(RCorrelation(parents[citizen].phenotype),2), variety, GA_Size);
+    snprintf(info, 256, "mol: %2ld  step: %5ld  Fitness: %10.6lf R^2: %10.6lf Similarity: %5ld/%-5ld\n", id, step,
+             parents[citizen].fitness, pow(RCorrelation(parents[citizen].phenotype), 2), variety, GA_Size);
   }
   std::cout << info;
   std::cout << "number of parameters: " << parents[citizen].phenotype.numberOfParameters << std::endl;
-  for(size_t i = 0; i < parents[citizen].phenotype.numberOfParameters; ++i)
-  { 
-    std::cout << "      genotype: " << parents[citizen].genotype.substr(64*i,64) << 
-                 " parameter: " << parents[citizen].phenotype.parameters(i) << "\n";
+  for (size_t i = 0; i < parents[citizen].phenotype.numberOfParameters; ++i)
+  {
+    std::cout << "      genotype: " << parents[citizen].genotype.substr(64 * i, 64)
+              << " parameter: " << parents[citizen].phenotype.parameters(i) << "\n";
   }
   std::cout << std::endl;
 }
 
-
 Fitting::DNA Fitting::fit(size_t ID)
 {
-  size_t optimisationStep{ 0 };
-  const size_t maxOptimisationStep{ 1000 };
-  size_t fullFilledConditionStep{ 0 };
-  const size_t maxFullfilledConditionStep{ 100 };
-  const double minimumFitness{ 5.0e-1 };
-  double tempFitnessValue{ 999.0 };
-  size_t tempVarietyValue{ 0 };
-  const double toleranceEqualFitness{ 1e-3 };
-  const size_t minstep{ 10 };
+  size_t optimisationStep{0};
+  const size_t maxOptimisationStep{1000};
+  size_t fullFilledConditionStep{0};
+  const size_t maxFullfilledConditionStep{100};
+  const double minimumFitness{5.0e-1};
+  double tempFitnessValue{999.0};
+  size_t tempVarietyValue{0};
+  const double toleranceEqualFitness{1e-3};
+  const size_t minstep{10};
 
-  fullFilledConditionStep = 0; 
+  fullFilledConditionStep = 0;
   optimisationStep = 0;
 
-  for(size_t i = 0; i < popAlpha.size(); ++i)
+  for (size_t i = 0; i < popAlpha.size(); ++i)
   {
     popAlpha[i] = newCitizen(ID);
     popBeta[i] = newCitizen(ID);
@@ -524,15 +542,14 @@ Fitting::DNA Fitting::fit(size_t ID)
   // print Initial (and unsorted) population
   writeCitizen(0, ID, 0, 0.0, 0);
 
-  if(refittingFlag)
+  if (refittingFlag)
   {
     std::cout << "Refitting activated\n";
-    for(size_t citizen = 0; citizen < 2; ++citizen)
+    for (size_t citizen = 0; citizen < 2; ++citizen)
     {
       parents[citizen].genotype.clear();
-      parents[citizen].genotype.reserve((sizeof(double) * CHAR_BIT) * 
-                      parents[citizen].phenotype.numberOfParameters);
-      for(size_t i = 0; i < parents[citizen].phenotype.numberOfParameters; ++i)
+      parents[citizen].genotype.reserve((sizeof(double) * CHAR_BIT) * parents[citizen].phenotype.numberOfParameters);
+      for (size_t i = 0; i < parents[citizen].phenotype.numberOfParameters; ++i)
       {
         // convert from double to bitset
         uint64_t p;
@@ -554,23 +571,21 @@ Fitting::DNA Fitting::fit(size_t ID)
     sortByFitness();
   }
 
-  isotherms[ID] = parents[0].phenotype;
-
+  components[ID].isotherm = parents[0].phenotype;
 
   std::cout << "Starting Genetic Algorithm optimization\n";
 
   bool continueCondition = true;
-  do 
+  do
   {
     sortByFitness();
 
     tempVarietyValue = biodiversity(children);
 
-    writeCitizen(0,  ID, optimisationStep,tempVarietyValue, fullFilledConditionStep);
+    writeCitizen(0, ID, optimisationStep, tempVarietyValue, fullFilledConditionStep);
 
-    if( optimisationStep >= minstep &&
-        parents[0].fitness <= minimumFitness &&
-        std::abs(parents[0].fitness - tempFitnessValue) <= toleranceEqualFitness )
+    if (optimisationStep >= minstep && parents[0].fitness <= minimumFitness &&
+        std::abs(parents[0].fitness - tempFitnessValue) <= toleranceEqualFitness)
     {
       fullFilledConditionStep += 1;
     }
@@ -579,8 +594,7 @@ Fitting::DNA Fitting::fit(size_t ID)
       fullFilledConditionStep = 0;
     }
 
-    if (optimisationStep >= maxOptimisationStep ||
-       fullFilledConditionStep >= maxFullfilledConditionStep )
+    if (optimisationStep >= maxOptimisationStep || fullFilledConditionStep >= maxFullfilledConditionStep)
     {
       continueCondition = false;
     }
@@ -595,9 +609,9 @@ Fitting::DNA Fitting::fit(size_t ID)
 
     optimisationStep += 1;
 
-  }while(continueCondition);
+  } while (continueCondition);
 
-  writeCitizen(0,  ID, optimisationStep,tempVarietyValue, fullFilledConditionStep);
+  writeCitizen(0, ID, optimisationStep, tempVarietyValue, fullFilledConditionStep);
 
   return parents[0];
 }
@@ -609,26 +623,26 @@ Fitting::DNA Fitting::fit(size_t ID)
 // 1) Sort: according to the fitness
 // 2) Reflect: get rid of the worst point, replace it by something better
 // 3) Extend: if better then extend it even further
-// 4) Contract: if not better then contract it 
+// 4) Contract: if not better then contract it
 // 5) Shrink: if still not better we shrink towards the best performing point
 // 6) Check convergence
 const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
 {
   size_t n = citizen.phenotype.numberOfParameters;
-  std::vector<std::vector<double>> v(n + 1, std::vector<double>(n)); // holds vertices of simplex
-  std::vector<double> f(n + 1);  // value of function at each vertex
-  std::vector<double> vr(n);     // reflection - coordinates
-  std::vector<double> ve(n);     // expansion - coordinates
-  std::vector<double> vc(n);     // contraction - coordinates
-  std::vector<double> vm(n);     // centroid - coordinates
-  std::vector<double> vtmp(n);   // temporary array passed to FUNC
-  size_t vs;                     // vertex with the smallest value
-  size_t vh;                     // vertex with next smallest value
-  size_t vg;                     // vertex with largest value
-  double fr;                     // value of function at reflection point
-  double fe;                     // value of function at expansion point
-  double fc;                     // value of function at contraction point
-  size_t iprint{ 0 };
+  std::vector<std::vector<double>> v(n + 1, std::vector<double>(n));  // holds vertices of simplex
+  std::vector<double> f(n + 1);                                       // value of function at each vertex
+  std::vector<double> vr(n);                                          // reflection - coordinates
+  std::vector<double> ve(n);                                          // expansion - coordinates
+  std::vector<double> vc(n);                                          // contraction - coordinates
+  std::vector<double> vm(n);                                          // centroid - coordinates
+  std::vector<double> vtmp(n);                                        // temporary array passed to FUNC
+  size_t vs;                                                          // vertex with the smallest value
+  size_t vh;                                                          // vertex with next smallest value
+  size_t vg;                                                          // vertex with largest value
+  double fr;                                                          // value of function at reflection point
+  double fe;                                                          // value of function at expansion point
+  double fc;                                                          // value of function at contraction point
+  size_t iprint{0};
   size_t MAX_IT = 1000000;
   double EPSILON = 1.0e-4;
   double ALPHA = 1.0;
@@ -637,33 +651,33 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
 
   std::cout << "\nMinimising the cost function using the Nelder-Mead SIMPLEX method:\n\n";
 
-  for(size_t i = 0 ; i < n; ++i)
+  for (size_t i = 0; i < n; ++i)
   {
     v[0][i] = citizen.phenotype.parameters(i);
   }
 
   // values used to create initial simplex
-  double pn = scale * (std::sqrt(static_cast<double>(n) + 1.0) - 1.0 + static_cast<double>(n)) / 
+  double pn = scale * (std::sqrt(static_cast<double>(n) + 1.0) - 1.0 + static_cast<double>(n)) /
               (static_cast<double>(n) * sqrt(2.0));
   double qn = scale * (std::sqrt(static_cast<double>(n) + 1.0) - 1.0) / (static_cast<double>(n) * sqrt(2.0));
-  for(size_t i = 1; i <= n; ++i)
+  for (size_t i = 1; i <= n; ++i)
   {
-    for(size_t j = 0; j < n; ++j)
+    for (size_t j = 0; j < n; ++j)
     {
       if (i - 1 == j)
       {
         v[i][j] = pn + citizen.phenotype.parameters(j);
       }
-      else 
+      else
       {
         v[i][j] = qn + citizen.phenotype.parameters(j);
       }
     }
   }
 
-  for(size_t i = 0; i <= n; ++i)
+  for (size_t i = 0; i <= n; ++i)
   {
-    for(size_t j = 0; j < n; ++j)
+    for (size_t j = 0; j < n; ++j)
     {
       citizen.phenotype.parameters(j) = v[i][j];
     }
@@ -676,7 +690,7 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
   if (iprint == 0)
   {
     vs = 0;
-    for(size_t j = 0; j <= n; ++j)
+    for (size_t j = 0; j <= n; ++j)
     {
       if (f[j] < f[vs])
       {
@@ -686,27 +700,27 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
 
     std::cout << "Initial Values from genetic algorithm:\n";
 
-    for(size_t j = 0; j < n; ++j)
+    for (size_t j = 0; j < n; ++j)
     {
       std::cout << v[vs][j] << " ";
     }
     std::cout << "Fit: " << f[vs] << "\n\n";
   }
 
-  for(size_t itr = 1; itr <= MAX_IT; ++itr)
+  for (size_t itr = 1; itr <= MAX_IT; ++itr)
   {
     // Step 1: Sort
     // ====================================================================
     std::vector<size_t> sortIndexes = sort_indexes(f);
-    vs = sortIndexes[0];   // index of smallest
-    vg = sortIndexes[n];   // index of largest
-    vh = sortIndexes[n-1]; // index of second largest
-  
+    vs = sortIndexes[0];      // index of smallest
+    vg = sortIndexes[n];      // index of largest
+    vh = sortIndexes[n - 1];  // index of second largest
+
     // calculate the center point of every point except for the worst one
-    for(size_t j = 0; j < n; ++j)
+    for (size_t j = 0; j < n; ++j)
     {
       double cent = 0.0;
-      for(size_t i = 0; i <= n; ++i)
+      for (size_t i = 0; i <= n; ++i)
       {
         if (i != vg)
         {
@@ -718,7 +732,7 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
 
     // Step 2: Reflect vg to new vertex vr
     // ====================================================================
-    for(size_t j = 0; j < n; ++j)
+    for (size_t j = 0; j < n; ++j)
     {
       vr[j] = (1.0 + ALPHA) * vm[j] - ALPHA * v[vg][j];
       citizen.phenotype.parameters(j) = vr[j];
@@ -727,7 +741,7 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
 
     if ((fr <= f[vh]) && (fr > f[vs]))
     {
-      for(size_t j = 0; j < n; ++j)
+      for (size_t j = 0; j < n; ++j)
       {
         v[vg][j] = vr[j];
       }
@@ -738,7 +752,7 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
     // ====================================================================
     if (fr <= f[vs])
     {
-      for(size_t j = 0; j < n; ++j)
+      for (size_t j = 0; j < n; ++j)
       {
         ve[j] = GAMMA * vr[j] + (1.0 - GAMMA) * vm[j];
         citizen.phenotype.parameters(j) = ve[j];
@@ -750,7 +764,7 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
 
       if (fe < fr)
       {
-        for(size_t j = 0; j < n; ++j)
+        for (size_t j = 0; j < n; ++j)
         {
           v[vg][j] = ve[j];
         }
@@ -758,7 +772,7 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
       }
       else
       {
-        for(size_t j = 0; j < n; ++j)
+        for (size_t j = 0; j < n; ++j)
         {
           v[vg][j] = vr[j];
         }
@@ -770,7 +784,7 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
     {
       // Step 4: Contraction
       // ====================================================================
-      for(size_t j = 0; j < n; ++j)
+      for (size_t j = 0; j < n; ++j)
       {
         vc[j] = BETA * v[vg][j] + (1.0 - BETA) * vm[j];
         citizen.phenotype.parameters(j) = vc[j];
@@ -778,7 +792,7 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
       fc = fitness(citizen.phenotype);
       if (fc < f[vg])
       {
-        for(size_t j = 0; j < n; ++j)
+        for (size_t j = 0; j < n; ++j)
         {
           v[vg][j] = vc[j];
         }
@@ -791,24 +805,24 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
         // at this point the contraction is not successful,
         // we must halve the distance from vs to all the
         // vertices of the simplex and then continue.
-        for(size_t row=0; row <= n; ++row)
+        for (size_t row = 0; row <= n; ++row)
         {
           if (row != vs)
           {
-            for(size_t j=0; j < n; ++j)
+            for (size_t j = 0; j < n; ++j)
             {
               v[row][j] = v[vs][j] + 0.5 * (v[row][j] - v[vs][j]);
             }
           }
         }
-        for(size_t m = 0; m < n; ++m)
+        for (size_t m = 0; m < n; ++m)
         {
           vtmp[m] = v[vg][m];
           citizen.phenotype.parameters(m) = vtmp[m];
         }
         f[vg] = fitness(citizen.phenotype);
 
-        for(size_t m = 0; m < n; ++m)
+        for (size_t m = 0; m < n; ++m)
         {
           vtmp[m] = v[vh][m];
           citizen.phenotype.parameters(m) = vtmp[m];
@@ -820,7 +834,7 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
     // Step 6: Test for convergence
     // ====================================================================
     double fsum = 0.0;
-    for(size_t j = 0; j <= n; ++j)
+    for (size_t j = 0; j <= n; ++j)
     {
       fsum = fsum + f[j];
     }
@@ -830,7 +844,7 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
     {
       // print out the value at each iteration
 
-      if(itr != MAX_IT)
+      if (itr != MAX_IT)
       {
         std::cout << "Nelder-Mead has converged: " << favg << " < " << EPSILON << "\n\n";
       }
@@ -838,22 +852,22 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
       {
         std::cout << "Reached maximum number of steps: " << itr << " = " << MAX_IT << "\n\n";
       }
-      
+
       // find the index of the smallest value
       sortIndexes = sort_indexes(f);
-      vs = sortIndexes[0];   // index of smallest
-      for(size_t m = 0; m < n; ++m)
+      vs = sortIndexes[0];  // index of smallest
+      for (size_t m = 0; m < n; ++m)
       {
         citizen.phenotype.parameters(m) = v[vs][m];
       }
       double min = fitness(citizen.phenotype);
 
       std::cout << "Final Values: " << std::endl;
-      for(size_t j = 0; j < n; ++j)
+      for (size_t j = 0; j < n; ++j)
       {
         std::cout << v[vs][j] << " ";
       }
-      std::cout << "Fit: " << min << " R2: " << pow(RCorrelation(citizen.phenotype),2) << "\n\n";
+      std::cout << "Fit: " << min << " R2: " << pow(RCorrelation(citizen.phenotype), 2) << "\n\n";
 
       return citizen;
     }
@@ -864,7 +878,7 @@ const Fitting::DNA Fitting::simplex(DNA citizen, double scale)
 
 void Fitting::createPlotScripts(const DNA &citizen, size_t ID)
 {
-  std::string plotFileName = "plot_fit_component_" + std::to_string(ID) + "_" + componentName[ID];
+  std::string plotFileName = "plot_fit_component_" + std::to_string(ID) + "_" + components[ID].name;
   std::ofstream stream(plotFileName);
 
   stream << "set encoding utf8\n";
@@ -872,15 +886,15 @@ void Fitting::createPlotScripts(const DNA &citizen, size_t ID)
   stream << "set ylabel 'Absolute loading, {/Helvetica-Italic q} / [mol/kg]' offset 0.0,0 font \"Helvetica,18\"\n";
   stream << "set bmargin 4\n";
   stream << "set yrange[0:]\n";
-  if(pressureScale == PressureScale::Log)
+  if (pressureScale == PressureScale::Log)
   {
     stream << "set log x\n";
   }
 
   stream << "set key  right bottom vertical samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
-  stream << "set key title '" << componentName[ID] << "'\n";
+  stream << "set key title '" << components[ID].name << "'\n";
 
-  stream << "set output 'isotherms_fit_" << componentName[ID] << ".pdf'\n";
+  stream << "set output 'isotherms_fit_" << components[ID].name << ".pdf'\n";
   stream << "set term pdf color solid\n";
 
   // colorscheme from book 'gnuplot in action', listing 12.7
@@ -897,22 +911,21 @@ void Fitting::createPlotScripts(const DNA &citizen, size_t ID)
   stream << "set linetype 11 pt 12 ps 0.5 lw 2 lc rgb '0x8b2500'\n";
   stream << "set linetype 12 pt 14 ps 0.5 lw 2 lc rgb '0x000000'\n";
 
-  stream << "array s[" << isotherms[ID].numberOfParameters << "]\n";
-  for(size_t i = 0; i < isotherms[ID].numberOfParameters; ++i)
+  stream << "array s[" << components[ID].isotherm.numberOfParameters << "]\n";
+  for (size_t i = 0; i < components[ID].isotherm.numberOfParameters; ++i)
   {
-    stream << "s[" << i + 1 << "]=" << isotherms[ID].parameters(i) << "\n";
+    stream << "s[" << i + 1 << "]=" << components[ID].isotherm.parameters(i) << "\n";
   }
   stream << "array p[" << citizen.phenotype.numberOfParameters << "]\n";
-  for(size_t i = 0; i < citizen.phenotype.numberOfParameters; ++i)
+  for (size_t i = 0; i < citizen.phenotype.numberOfParameters; ++i)
   {
     stream << "p[" << i + 1 << "]=" << citizen.phenotype.parameters(i) << "\n";
   }
-  stream << "plot \\\n" 
-         << isotherms[ID].gnuplotFunctionString('s') << " title 'start f(x)' with li dt 2 lw 2,\\\n"
+  stream << "plot \\\n"
+         << components[ID].isotherm.gnuplotFunctionString('s') << " title 'start f(x)' with li dt 2 lw 2,\\\n"
          << citizen.phenotype.gnuplotFunctionString('p') << " title 'fit f(x)' with li lw 2,\\\n";
-  stream << "'" << filename[ID] << "' us " << columnPressure + 1 << ":" << 
-            columnLoading + 1 << " title 'raw data' with po pt 5 ps 0.5\n";
-
+  stream << "'" << filename[ID] << "' us " << columnPressure + 1 << ":" << columnLoading + 1
+         << " title 'raw data' with po pt 5 ps 0.5\n";
 }
 
 void Fitting::createPlotScript()
@@ -922,14 +935,14 @@ void Fitting::createPlotScript()
     stream_graphs << "set PATH=%PATH%;C:\\Program Files\\gnuplot\\bin;C:\\Program Files\\ffmpeg-master-latest-win64-gpl\\bin;C:\\Program Files\\ffmpeg\\bin\n";
     for(size_t i = 0; i < Ncomp; ++i)
     {
-      std::string plotFileName = "plot_fit_component_" + std::to_string(i) + "_" + componentName[i];
+      std::string plotFileName = "plot_fit_component_" + std::to_string(i) + "_" + components[i].name;
       stream_graphs << "gnuplot.exe " << plotFileName << "\n";
     }
   #else
     std::ofstream stream_graphs("make_graphs");
     for(size_t i = 0; i < Ncomp; ++i)
     {
-      std::string plotFileName = "plot_fit_component_" + std::to_string(i) + "_" + componentName[i];
+      std::string plotFileName = "plot_fit_component_" + std::to_string(i) + "_" + components[i].name;
       stream_graphs << "gnuplot " << plotFileName << "\n";
     }
   #endif
@@ -943,3 +956,69 @@ void Fitting::createPlotScript()
 
 }
 
+#ifdef PYBUILD
+
+void Fitting::selectData(size_t ID, std::vector<std::vector<std::pair<double, double>>> data)
+{
+  rawData = data[ID];
+
+  // get pressure range
+  pressureRange = std::make_pair(rawData.front().first, rawData.back().first);
+  logPressureRange = std::make_pair(std::log(pressureRange.first), std::log(pressureRange.second));
+
+  maximumLoading = 0.0;
+  for (const auto &pair : rawData)
+  {
+    if (pair.second > maximumLoading)
+    {
+      maximumLoading = pair.second;
+    }
+  }
+}
+
+std::vector<double> Fitting::compute(std::vector<std::vector<std::pair<double, double>>> data)
+{
+  std::vector<double> output;
+  std::cout << "STARTING FITTING\n";
+
+  for (size_t ID = 0; ID < Ncomp; ++ID)
+  {
+    selectData(ID, data);
+
+    const DNA bestCitizen = fit(ID);
+    DNA optimizedBestCitizen = simplex(bestCitizen, 1.0);
+
+    // save optimized params to component, insert in output array
+    for (size_t j = 0; j < optimizedBestCitizen.phenotype.numberOfParameters; j++)
+    {
+      components[ID].isotherm.setParameters(j, optimizedBestCitizen.phenotype.parameters(j));
+      output.push_back(optimizedBestCitizen.phenotype.parameters(j));
+    }
+  }
+  for (size_t ID = 0; ID < Ncomp; ++ID)
+  {
+    std::cout << components[ID].repr() << "\n";
+  }
+  return output;
+}
+
+py::array_t<double> Fitting::evaluate(std::vector<double> pressure)
+{
+  // initialize numpy array
+  size_t Npress = pressure.size();
+  std::array<size_t, 2> shape{{Npress, Ncomp}};
+  py::array_t<double> output(shape);
+  double *data = output.mutable_data();
+
+  // add datapoints
+  for (size_t i = 0; i < Npress; i++)
+  {
+    for (size_t j = 0; j < Ncomp; j++)
+    {
+      data[i * Ncomp + j] = components[j].isotherm.value(pressure[i]);
+    }
+  }
+  return output;
+}
+
+#endif  // PYBUILD

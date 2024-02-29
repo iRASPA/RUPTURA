@@ -9,120 +9,137 @@ Isotherm::Isotherm(Isotherm::Type t, const std::vector<double> &values, size_t n
 {
 }
 
-void Isotherm::print() const
+Isotherm::Isotherm(std::string t, const std::vector<double> &values, size_t numberOfValues)
+    : parameters(values), numberOfParameters(numberOfValues)
 {
+  auto itr = Isotherm::isotherm_map.find(t);
+  if (itr != isotherm_map.end())
+  {
+    type = itr->second;
+  }
+  else
+  {
+    std::cout << "Error: unknown isotherm type (" << t << ").";
+    exit(0);
+  }
+}
+
+std::string Isotherm::repr() const
+{
+  std::string s;
   switch(type)
   {
     case Isotherm::Type::Langmuir:
     {
-      std::cout << "    Langmuir isotherm\n";
-      std::cout << "        q_sat: " << parameters[0] << "\n";
-      std::cout << "        b:     " << parameters[1] << "\n";
+      s += "    Langmuir isotherm\n";
+      s += "        q_sat: " + std::to_string(parameters[0]) + "\n";
+      s += "        b:     " + std::to_string(parameters[1]) + "\n";
       break;
     }
     case Isotherm::Type::Anti_Langmuir:
     {
-      std::cout << "    Anti-Langmuir isotherm\n";
-      std::cout << "        a:     " << parameters[0] << "\n";
-      std::cout << "        b:     " << parameters[1] << "\n";
+      s += "    Anti-Langmuir isotherm\n";
+      s += "        a:     " + std::to_string(parameters[0]) + "\n";
+      s += "        b:     " + std::to_string(parameters[1]) + "\n";
       break;
     }
     case Isotherm::Type::BET:
     {
-      std::cout << "    BET isotherm\n";
-      std::cout << "        q_sat: " << parameters[0] << "\n";
-      std::cout << "        b:     " << parameters[1] << "\n";
-      std::cout << "        c:     " << parameters[2] << "\n";
+      s += "    BET isotherm\n";
+      s += "        q_sat: " + std::to_string(parameters[0]) + "\n";
+      s += "        b:     " + std::to_string(parameters[1]) + "\n";
+      s += "        c:     " + std::to_string(parameters[2]) + "\n";
       break;
     }
     case Isotherm::Type::Henry:
     {
-      std::cout << "    Henry isotherm\n";
-      std::cout << "        a:     " << parameters[0] << "\n";
+      s += "    Henry isotherm\n";
+      s += "        a:     " + std::to_string(parameters[0]) + "\n";
       break;
     }
     case Isotherm::Type::Freundlich:
     {
-      std::cout << "    Freundlich isotherm\n";
-      std::cout << "        a:     " << parameters[0] << "\n";
-      std::cout << "        nu:    " << parameters[1] << "\n";
+      s += "    Freundlich isotherm\n";
+      s += "        a:     " + std::to_string(parameters[0]) + "\n";
+      s += "        nu:    " + std::to_string(parameters[1]) + "\n";
       break;
     }
     case Isotherm::Type::Sips:
     {
-      std::cout << "    Sips isotherm\n";
-      std::cout << "        q_sat: " << parameters[0] << "\n";
-      std::cout << "        b:     " << parameters[1] << "\n";
-      std::cout << "        nu:    " << parameters[2] << "\n";
+      s += "    Sips isotherm\n";
+      s += "        q_sat: " + std::to_string(parameters[0]) + "\n";
+      s += "        b:     " + std::to_string(parameters[1]) + "\n";
+      s += "        nu:    " + std::to_string(parameters[2]) + "\n";
       break;
     }
     case Isotherm::Type::Langmuir_Freundlich:
     {
-      std::cout << "    Langmuir-Freundlich isotherm\n";
-      std::cout << "        q_sat: " << parameters[0] << "\n";
-      std::cout << "        b:     " << parameters[1] << "\n";
-      std::cout << "        nu:    " << parameters[2] << "\n";
+      s += "    Langmuir-Freundlich isotherm\n";
+      s += "        q_sat: " + std::to_string(parameters[0]) + "\n";
+      s += "        b:     " + std::to_string(parameters[1]) + "\n";
+      s += "        nu:    " + std::to_string(parameters[2]) + "\n";
       break;
     }
     case Isotherm::Type::Redlich_Peterson:
     {
-      std::cout << "    Redlich-Peterson isotherm\n";
-      std::cout << "        a:     " << parameters[0] << "\n";
-      std::cout << "        b:     " << parameters[1] << "\n";
-      std::cout << "        nu:    " << parameters[2] << "\n";
+      s += "    Redlich-Peterson isotherm\n";
+      s += "        a:     " + std::to_string(parameters[0]) + "\n";
+      s += "        b:     " + std::to_string(parameters[1]) + "\n";
+      s += "        nu:    " + std::to_string(parameters[2]) + "\n";
       break;
     }
     case Isotherm::Type::Toth:
     {
-      std::cout << "    Toth isotherm\n";
-      std::cout << "        q_sat: " << parameters[0] << "\n";
-      std::cout << "        b:     " << parameters[1] << "\n";
-      std::cout << "        nu:    " << parameters[2] << "\n";
+      s += "    Toth isotherm\n";
+      s += "        q_sat: " + std::to_string(parameters[0]) + "\n";
+      s += "        b:     " + std::to_string(parameters[1]) + "\n";
+      s += "        nu:    " + std::to_string(parameters[2]) + "\n";
       break;
     }
     case Isotherm::Type::Unilan:
     {
-      std::cout << "    Unilan isotherm\n";
-      std::cout << "        q_sat: " << parameters[0] << "\n";
-      std::cout << "        b:     " << parameters[1] << "\n";
-      std::cout << "        eta:   " << parameters[2] << "\n";
+      s += "    Unilan isotherm\n";
+      s += "        q_sat: " + std::to_string(parameters[0]) + "\n";
+      s += "        b:     " + std::to_string(parameters[1]) + "\n";
+      s += "        eta:   " + std::to_string(parameters[2]) + "\n";
       break;
     }
     case Isotherm::Type::OBrien_Myers:
     {
-      std::cout << "    O'Brian & Myers isotherm\n";
-      std::cout << "        q_sat: " << parameters[0] << "\n";
-      std::cout << "        b:     " << parameters[1] << "\n";
-      std::cout << "        sigma: " << parameters[2] << "\n";
+      s += "    O'Brian & Myers isotherm\n";
+      s += "        q_sat: " + std::to_string(parameters[0]) + "\n";
+      s += "        b:     " + std::to_string(parameters[1]) + "\n";
+      s += "        sigma: " + std::to_string(parameters[2]) + "\n";
       break;
     }
     case Isotherm::Type::Quadratic:
     {
-      std::cout << "    Quadratic isotherm\n";
-      std::cout << "        q_sat: " << parameters[0] << "\n";
-      std::cout << "        b:     " << parameters[1] << "\n";
-      std::cout << "        c:     " << parameters[2] << "\n";
+      s += "    Quadratic isotherm\n";
+      s += "        q_sat: " + std::to_string(parameters[0]) + "\n";
+      s += "        b:     " + std::to_string(parameters[1]) + "\n";
+      s += "        c:     " + std::to_string(parameters[2]) + "\n";
       break;
     }
     case Isotherm::Type::Temkin:
     {
-      std::cout << "    Temkin isotherm\n";
-      std::cout << "        q_sat: " << parameters[0] << "\n";
-      std::cout << "        b:     " << parameters[1] << "\n";
-      std::cout << "        c:     " << parameters[2] << "\n";
+      s += "    Temkin isotherm\n";
+      s += "        q_sat: " + std::to_string(parameters[0]) + "\n";
+      s += "        b:     " + std::to_string(parameters[1]) + "\n";
+      s += "        c:     " + std::to_string(parameters[2]) + "\n";
       break;
     }
     case Isotherm::Type::BingelWalton:
     {
-      std::cout << "    Bingel&Walton isotherm\n";
-      std::cout << "        q_sat: " << parameters[0] << "\n";
-      std::cout << "        a:     " << parameters[1] << "\n";
-      std::cout << "        b:     " << parameters[2] << "\n";
+      s += "    Bingel&Walton isotherm\n";
+      s += "        q_sat: " + std::to_string(parameters[0]) + "\n";
+      s += "        a:     " + std::to_string(parameters[1]) + "\n";
+      s += "        b:     " + std::to_string(parameters[2]) + "\n";
       break;
     }
     default:
       break;
   }
+  return s;
 }
 
 bool Isotherm::isUnphysical() const
