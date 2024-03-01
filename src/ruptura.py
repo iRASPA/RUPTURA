@@ -74,6 +74,10 @@ class Components:
                 Defaults to False.
         """
 
+        # check valid molfrac
+        if GasPhaseMolFraction < 0.0:
+            raise ValueError("Mol fraction can not be negative!")
+
         # get idx from existing components
         idx = len(self._components)
 
