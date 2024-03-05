@@ -87,5 +87,5 @@ Ruptura can be used of python through `src/ruptura.py`, examples can be found in
 The python package can be installed with:
 
 ```
-pip install .
+pip install ruptura
 ```

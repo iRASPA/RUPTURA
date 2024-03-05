@@ -157,8 +157,11 @@ ipch/
 *.run.xml
 
 # Python files
-build
 **/*.egg-info
 **/__pycache__
 **/*.pyc
 **/*cpython*
+
+# building and testing
+build/
+.tox/
