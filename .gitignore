@@ -13,7 +13,6 @@ Package.StoreAssociation.xml
 *.appxupload
 
 column.data
-examples
 
 # C++ objects and libs
 *.slo
