@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/ruptura-{{ version }}.tar.gz
-  sha256: caaa11df08ed6a285ddf755f138359516adb7b061cb49717d5a22a5080a400ac
+  sha256: 25a28cb0773112b1594e04ecb928136945081052ee1d4ee868697c9a36b805d5
 
 build:
   skip: true  # [py<310]
