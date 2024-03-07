@@ -12,7 +12,7 @@ authors = [
   {name="Thijs J.H. Vlugt, Delft University of Technology, The Netherlands"},
   {name="David Dubbeldam, University of Amsterdam, The Netherlands"}
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 readme = "README.md"
 dependencies = [
   "matplotlib>=3",
