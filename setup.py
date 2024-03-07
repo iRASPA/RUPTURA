@@ -6,7 +6,7 @@ ext_modules = [
     Pybind11Extension(
     "_ruptura",
     sources=glob("src/*.cpp"),
-    extra_compile_args=["-std=c++17", "-DPYBUILD=1"]
+    extra_compile_args=["-std=c++17", "-DPYBUILD=1", "-D_LIBCPP_DISABLE_AVAILABILITY"]
     )
 ]
 
