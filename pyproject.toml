@@ -1,6 +1,6 @@
 [project]
 name = "ruptura"
-version = "1.0.3"
+version = "1.0.4"
 authors = [
   {name="Shrinjay Sharma, Delft University of Technology, The Netherlands"},
   {name="Youri Ran, University of Amsterdam, The Netherlands"},
