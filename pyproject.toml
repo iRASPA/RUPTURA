@@ -3,6 +3,7 @@ name = "ruptura"
 version = "1.0.3"
 authors = [
   {name="Shrinjay Sharma, Delft University of Technology, The Netherlands"},
+  {name="Youri Ran, University of Amsterdam, The Netherlands"},
   {name="Salvador R.G. Balestra, Pablo de Olavide University, Spain"},
   {name="Richard Baur, Shell Global Solutions International B.V., The Netherlands"},
   {name="Umang Agarwal, Shell Global Solutions International B.V., The Netherlands"},

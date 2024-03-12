@@ -49,6 +49,7 @@ https://www.tandfonline.com/doi/full/10.1080/08927022.2023.2202757
 Authors
 =======
 Shrinjay Sharma,        Delft University of Technology, The Netherlands<br>
+Youri Ran,              University of Amsterdam, The Netherlands<br>
 Salvador R.G. Balestra, Pablo de Olavide University, Spain<br>
 Richard Baur,           Shell Global Solutions International B.V., The Netherlands<br>
 Umang Agarwal,          Shell Global Solutions International B.V., The Netherlands<br>
@@ -89,3 +90,8 @@ The python package can be installed with:
 ```
 pip install ruptura
 ```
+or
+```
+conda install ruptura
+```
+
