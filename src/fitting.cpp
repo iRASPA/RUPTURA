@@ -941,7 +941,7 @@ void Fitting::createPlotScript()
   #else
     std::ofstream stream_graphs("make_graphs");
     stream_graphs << "#!/bin/sh\n";
-    stream_graphs << "export LC_ALL='en_US.UTF-8'";
+    stream_graphs << "export LC_ALL='en_US.UTF-8'\n";
     for(size_t i = 0; i < Ncomp; ++i)
     {
       std::string plotFileName = "plot_fit_component_" + std::to_string(i) + "_" + components[i].name;

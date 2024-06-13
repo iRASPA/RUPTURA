@@ -1318,7 +1318,7 @@ void MixturePrediction::createPlotScript()
   #else
     std::ofstream stream_graphs("make_graphs");
     stream_graphs << "#!/bin/sh\n";
-    stream_graphs << "export LC_ALL='en_US.UTF-8'";
+    stream_graphs << "export LC_ALL='en_US.UTF-8'\n";
     stream_graphs << "cd -- \"$(dirname \"$0\")\"\n";
     stream_graphs << "gnuplot plot_pure_components\n";
     stream_graphs << "gnuplot plot_mixture\n";
