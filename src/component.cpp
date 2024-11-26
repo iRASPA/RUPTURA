@@ -1,5 +1,6 @@
 #include "component.h"
 
+#include <iostream>
 #include <string>
 
 #include "isotherm.h"
@@ -15,6 +16,8 @@ Component::Component(size_t _id, std::string _name, std::vector<Isotherm> _isoth
   }
 }
 
+void Component::print() const { std::cout << repr(); }
+
 std::string Component::repr() const
 {
   std::string s;
@@ -24,26 +27,12 @@ std::string Component::repr() const
     s += "    carrier-gas\n";
     s += isotherm.repr();
   }
-    s += "    mol-fraction in the gas:   " + std::to_string(Yi0) + " [-]\n";
-    if (!isCarrierGas)
-    {
-      s += "    mass-transfer coefficient: " + std::to_string(Kl) + " [1/s]\n";
-      s += "    diffusion coefficient:     " + std::to_string(D) + " [m^2/s]\n";
-      s += isotherm.repr();
-    }
-    return s;
-}
-
-std::vector<Component>& normalize_molfracs(std::vector<Component>& components)
-{
-  double total = 0;
-  for (auto comp : components)
+  s += "    mol-fraction in the gas:   " + std::to_string(Yi0) + " [-]\n";
+  if (!isCarrierGas)
   {
-    total += comp.Yi0;
+    s += "    mas-transfer coefficient: " + std::to_string(Kl) + " [1/s]\n";
+    s += "    diffusion coefficient:     " + std::to_string(D) + " [m^2/s]\n";
+    s += isotherm.repr();
   }
-  for (auto comp : components)
-  {
-    comp.Yi0 /= total;
-  }
-  return components;
+  return s;
 }

@@ -1,22 +1,31 @@
 from glob import glob
 from setuptools import setup
 from pybind11.setup_helpers import Pybind11Extension, build_ext
-import platform
 
-# MSVC, compiler used in conda uses different flag for the c++ version and does not define the __cplusplus variable by default
-# set it so that the breakthrough video chmods don't break (Windows also doesn't have S_IRWXU)
-std_version = ["/std:c++17", '/Zc:__cplusplus'] if platform.system() == "Windows" else ["-std=c++17"]
 ext_modules = [
     Pybind11Extension(
     "_ruptura",
     sources=glob("src/*.cpp"),
-    extra_compile_args= std_version + ["-DPYBUILD=1", "-D_LIBCPP_DISABLE_AVAILABILITY"]
+    extra_compile_args=["-std=c++17", "-DPYBUILD=1"]
     )
 ]
 
 setup(
+    name="ruptura",
+    version="1.0.5",
+    author=[
+        "Shrinjay Sharma, Delft University of Technology, The Netherlands",
+        "Salvador R.G. Balestra, Pablo de Olavide University, Spain",
+        "Richard Baur, Shell Global Solutions International B.V., The Netherlands",
+        "Umang Agarwal, Shell Global Solutions International B.V., The Netherlands",
+        "Eric Zuidema, Shell Global Solutions International B.V., The Netherlands",
+        "Marcello Rigutto, Shell Global Solutions International B.V., The Netherlands",
+        "Sofia Calero, Eindhoven University of Technology, The Netherlands",
+        "Thijs J.H. Vlugt, Delft University of Technology, The Netherlands",
+        "David Dubbeldam, University of Amsterdam, The Netherlands",
+    ],
     ext_modules=ext_modules,
     zip_safe=False,
     packages=["ruptura"],
-    package_dir={"ruptura":"src"}
+    package_dir={"ruptura": "ruptura"},
 )

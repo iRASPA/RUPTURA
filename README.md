@@ -62,13 +62,20 @@ David Dubbeldam,        University of Amsterdam, The Netherlands<br>
 Compilation
 ===========
 ```
-cd src<br>
-make 
+cmake . -B build
+cmake --build build
 ```
 
 to clean:<br>
 ```
-make clean
+rm -rf build
+```
+
+to build and host the documentation
+```
+cmake --build build documentation
+cd build/html
+python -m http.server 8000
 ```
 
 Running

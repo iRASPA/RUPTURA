@@ -1,31 +1,32 @@
 #include "inputreader.h"
 
-#include <cstddef>
 #include <cctype>
+#include <cstddef>
+#include <fstream>
 #include <iostream>
 #include <sstream>
-#include <fstream>
 
 bool caseInSensStringCompare(const std::string& str1, const std::string& str2)
 {
-  return str1.size() == str2.size() && std::equal(str1.begin(), str1.end(), str2.begin(), 
-        [](int a, int b) {return std::tolower(a) == std::tolower(b); });
+  return str1.size() == str2.size() && std::equal(str1.begin(), str1.end(), str2.begin(),
+                                                  [](int a, int b) { return std::tolower(a) == std::tolower(b); });
 }
 
-bool startsWith(const std::string &str, const std::string &prefix) {
-    return str.size() >= prefix.size() && str.substr(0, prefix.size()) == prefix;
+bool startsWith(const std::string& str, const std::string& prefix)
+{
+  return str.size() >= prefix.size() && str.substr(0, prefix.size()) == prefix;
 }
 
 std::string trim(const std::string& s)
 {
   auto start = s.begin();
-  while (start != s.end() && std::isspace(*start)) 
+  while (start != s.end() && std::isspace(*start))
   {
     start++;
   }
 
   auto end = s.end();
-  do 
+  do
   {
     end--;
   } while (std::distance(start, end) > 0 && std::isspace(*end));
@@ -33,7 +34,7 @@ std::string trim(const std::string& s)
   return std::string(start, end + 1);
 }
 
-template<class T>
+template <class T>
 T parse(const std::string& arguments, [[maybe_unused]] const std::string& keyword, [[maybe_unused]] size_t lineNumber)
 {
   T value;
@@ -46,7 +47,7 @@ T parse(const std::string& arguments, [[maybe_unused]] const std::string& keywor
   return value;
 }
 
-template<typename T>
+template <typename T>
 std::vector<T> parseListOfSystemValues(const std::string& arguments, const std::string& keyword, size_t lineNumber)
 {
   std::vector<T> list{};
@@ -54,8 +55,8 @@ std::vector<T> parseListOfSystemValues(const std::string& arguments, const std::
   std::string str;
   std::istringstream ss(arguments);
 
-  std::string errorString = "No values could be read for keyword '" + keyword + 
-                            "' at line: " + std::to_string(lineNumber) + "\n";
+  std::string errorString =
+      "No values could be read for keyword '" + keyword + "' at line: " + std::to_string(lineNumber) + "\n";
 
   while (ss >> str)
   {
@@ -81,7 +82,6 @@ std::vector<T> parseListOfSystemValues(const std::string& arguments, const std::
       }
       return list;
     }
-
   };
 
   if (list.empty())
@@ -100,11 +100,11 @@ double parseDouble(const std::string& arguments, const std::string& keyword, siz
 
   if (ss >> value)
   {
-      return value;
+    return value;
   };
 
-  std::string errorString = "Numbers could not be read for keyword '" + keyword + 
-                            "' at line: " + std::to_string(lineNumber) + "\n";
+  std::string errorString =
+      "Numbers could not be read for keyword '" + keyword + "' at line: " + std::to_string(lineNumber) + "\n";
   throw std::runtime_error(errorString);
 }
 
@@ -116,7 +116,7 @@ int parseBoolean(const std::string& arguments, const std::string& keyword, size_
 
   if (ss >> std::boolalpha >> value)
   {
-      return value;
+    return value;
   };
 
   std::string str;
@@ -127,27 +127,24 @@ int parseBoolean(const std::string& arguments, const std::string& keyword, size_
     if (caseInSensStringCompare(str, "no")) return false;
   };
 
-  std::string errorString = "Booleands could not be read for keyword '" + keyword + 
-                            "' at line: " + std::to_string(lineNumber) + "\n";
+  std::string errorString =
+      "Booleands could not be read for keyword '" + keyword + "' at line: " + std::to_string(lineNumber) + "\n";
   throw std::runtime_error(errorString);
 }
 
-
-
-InputReader::InputReader(const std::string fileName):
-  components()
+InputReader::InputReader(const std::string fileName) : components()
 {
   components.reserve(16);
 
-  std::ifstream fileInput{ fileName };
+  std::ifstream fileInput{fileName};
   std::string errorOpeningFile = "Required input file '" + fileName + "' does not exist";
   if (!fileInput) throw std::runtime_error(errorOpeningFile);
 
   std::string line{};
   std::string keyword{};
   std::string arguments{};
-  size_t lineNumber{ 0 };
-  size_t numberOfComponents{ 0 };
+  size_t lineNumber{0};
+  size_t numberOfComponents{0};
 
   while (std::getline(fileInput, line))
   {
@@ -167,22 +164,22 @@ InputReader::InputReader(const std::string fileName):
         std::istringstream ss(arguments);
         if (ss >> str)
         {
-          if (caseInSensStringCompare(str, "Breakthrough")) 
+          if (caseInSensStringCompare(str, "Breakthrough"))
           {
             simulationType = SimulationType::Breakthrough;
             continue;
           }
-          if (caseInSensStringCompare(str, "MixturePrediction")) 
+          if (caseInSensStringCompare(str, "MixturePrediction"))
           {
             simulationType = SimulationType::MixturePrediction;
             continue;
           }
-          if (caseInSensStringCompare(str, "Fitting")) 
+          if (caseInSensStringCompare(str, "Fitting"))
           {
             simulationType = SimulationType::Fitting;
             continue;
           }
-          if (caseInSensStringCompare(str, "Test")) 
+          if (caseInSensStringCompare(str, "Test"))
           {
             simulationType = SimulationType::Test;
             continue;
@@ -195,22 +192,22 @@ InputReader::InputReader(const std::string fileName):
         std::istringstream ss(arguments);
         if (ss >> str)
         {
-          if (caseInSensStringCompare(str, "IAST")) 
+          if (caseInSensStringCompare(str, "IAST"))
           {
             mixturePredictionMethod = 0;
             continue;
           }
-          if (caseInSensStringCompare(str, "SIAST")) 
+          if (caseInSensStringCompare(str, "SIAST"))
           {
             mixturePredictionMethod = 1;
             continue;
           }
-          if (caseInSensStringCompare(str, "EI")) 
+          if (caseInSensStringCompare(str, "EI"))
           {
             mixturePredictionMethod = 2;
             continue;
           }
-          if (caseInSensStringCompare(str, "SEI")) 
+          if (caseInSensStringCompare(str, "SEI"))
           {
             mixturePredictionMethod = 3;
             continue;
@@ -223,12 +220,12 @@ InputReader::InputReader(const std::string fileName):
         std::istringstream ss(arguments);
         if (ss >> str)
         {
-          if (caseInSensStringCompare(str, "FastIAS")) 
+          if (caseInSensStringCompare(str, "FastIAS"))
           {
             IASTMethod = 0;
             continue;
           }
-          if (caseInSensStringCompare(str, "Bisection")) 
+          if (caseInSensStringCompare(str, "Bisection"))
           {
             IASTMethod = 1;
             continue;
@@ -294,17 +291,17 @@ InputReader::InputReader(const std::string fileName):
         std::istringstream ss(arguments);
         if (ss >> str)
         {
-          if (caseInSensStringCompare(str, "Log")) 
+          if (caseInSensStringCompare(str, "Log"))
           {
             pressureScale = 0;
             continue;
           }
-          if (caseInSensStringCompare(str, "Linear")) 
+          if (caseInSensStringCompare(str, "Linear"))
           {
             pressureScale = 1;
             continue;
           }
-          if (caseInSensStringCompare(str, "Normal")) 
+          if (caseInSensStringCompare(str, "Normal"))
           {
             pressureScale = 1;
             continue;
@@ -334,7 +331,7 @@ InputReader::InputReader(const std::string fileName):
           {
             autoNumberOfTimeSteps = true;
           }
-          else 
+          else
           {
             size_t value = parse<size_t>(arguments, keyword, lineNumber);
             this->numberOfTimeSteps = value;
@@ -356,7 +353,7 @@ InputReader::InputReader(const std::string fileName):
         double value = parseDouble(arguments, keyword, lineNumber);
         this->pulseTime = value;
         continue;
-      }     
+      }
       if (caseInSensStringCompare(keyword, "TimeStep"))
       {
         double value = parseDouble(arguments, keyword, lineNumber);
@@ -413,7 +410,7 @@ InputReader::InputReader(const std::string fileName):
       {
         std::istringstream ss(arguments);
         std::cout << "arguments: " << arguments << std::endl;
-        std::string c, moleculeNameKeyword,remainder,componentName;
+        std::string c, moleculeNameKeyword, remainder, componentName;
         ss >> c >> moleculeNameKeyword >> componentName;
         std::getline(ss, remainder);
 
@@ -465,7 +462,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Langmuir"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 2)
+        if (values.size() < 2)
         {
           throw std::runtime_error("Error: Langmuir requires two parameters");
         }
@@ -477,7 +474,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Anti-Langmuir"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 2)
+        if (values.size() < 2)
         {
           throw std::runtime_error("Error: Anti-Langmuir requires two parameters");
         }
@@ -489,7 +486,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "BET"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 3)
+        if (values.size() < 3)
         {
           throw std::runtime_error("Error: BET requires three parameters");
         }
@@ -501,7 +498,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Henry"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 1)
+        if (values.size() < 1)
         {
           throw std::runtime_error("Error: Henry requires one parameter");
         }
@@ -513,7 +510,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Freundlich"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 2)
+        if (values.size() < 2)
         {
           throw std::runtime_error("Error: Freundlich requires two parameters");
         }
@@ -525,7 +522,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Sips"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 3)
+        if (values.size() < 3)
         {
           throw std::runtime_error("Error: Sips requires three parameters");
         }
@@ -537,7 +534,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Langmuir-Freundlich"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 3)
+        if (values.size() < 3)
         {
           throw std::runtime_error("Error: Langmuir-Freundlich requires three parameters");
         }
@@ -549,7 +546,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Redlich-Peterson"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 3)
+        if (values.size() < 3)
         {
           throw std::runtime_error("Error: Redlich-Peterson requires three parameters");
         }
@@ -561,7 +558,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Toth"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 3)
+        if (values.size() < 3)
         {
           throw std::runtime_error("Error: Toth requires three parameters");
         }
@@ -573,7 +570,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Unilan"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 3)
+        if (values.size() < 3)
         {
           throw std::runtime_error("Error: Unilan requires three parameters");
         }
@@ -585,7 +582,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "O'Brian&Myers"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 3)
+        if (values.size() < 3)
         {
           throw std::runtime_error("Error: O'Brien&Myers requires three parameters");
         }
@@ -597,7 +594,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Quadratic"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 3)
+        if (values.size() < 3)
         {
           throw std::runtime_error("Error: Quadratic requires three parameters");
         }
@@ -609,7 +606,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Temkin"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 3)
+        if (values.size() < 3)
         {
           throw std::runtime_error("Error: Temkin requires three parameters");
         }
@@ -621,7 +618,7 @@ InputReader::InputReader(const std::string fileName):
       if (caseInSensStringCompare(keyword, "Bingel&Walton"))
       {
         std::vector<double> values = parseListOfSystemValues<double>(arguments, keyword, lineNumber);
-        if(values.size() < 3)
+        if (values.size() < 3)
         {
           throw std::runtime_error("Error: Bingel&Walton requires three parameters");
         }
@@ -631,7 +628,7 @@ InputReader::InputReader(const std::string fileName):
         continue;
       }
 
-      if(!(startsWith(keyword, "//") || startsWith(keyword, "#")))
+      if (!(startsWith(keyword, "//") || startsWith(keyword, "#")))
       {
         std::cout << "Error: unknown keyword (" << keyword << ") with arguments (" << arguments << ")" << std::endl;
         exit(0);
@@ -640,17 +637,17 @@ InputReader::InputReader(const std::string fileName):
   }
 
   // normalize gas-phase mol-fractions to unity
-  if(simulationType != SimulationType::Fitting)
+  if (simulationType != SimulationType::Fitting)
   {
     double sum = 0.0;
-    for(size_t j = 0; j < components.size(); ++j)
+    for (size_t j = 0; j < components.size(); ++j)
     {
       sum += components[j].Yi0;
     }
-    if(std::abs(sum-1.0)>1e-15)
+    if (std::abs(sum - 1.0) > 1e-15)
     {
       std::cout << "Normalizing: Gas-phase molfractions did not sum exactly to unity!\n\n";
-      for(size_t j = 0; j < components.size(); ++j)
+      for (size_t j = 0; j < components.size(); ++j)
       {
         components[j].Yi0 /= sum;
       }
@@ -659,9 +656,9 @@ InputReader::InputReader(const std::string fileName):
 
   numberOfCarrierGases = 0;
   carrierGasComponent = 0;
-  for(size_t j = 0; j < components.size(); ++j)
+  for (size_t j = 0; j < components.size(); ++j)
   {
-    if(components[j].isCarrierGas) 
+    if (components[j].isCarrierGas)
     {
       carrierGasComponent = j;
       std::vector<double> values{1.0, 0.0};
@@ -673,13 +670,13 @@ InputReader::InputReader(const std::string fileName):
     }
   }
 
-  if((mixturePredictionMethod == 2) || (mixturePredictionMethod == 3))
+  if ((mixturePredictionMethod == 2) || (mixturePredictionMethod == 3))
   {
-    for(size_t i = 0; i < components.size(); ++i)
+    for (size_t i = 0; i < components.size(); ++i)
     {
-      for(size_t j = 0; j < components[i].isotherm.numberOfSites; ++j)
+      for (size_t j = 0; j < components[i].isotherm.numberOfSites; ++j)
       {
-        if( components[i].isotherm.sites[j].type != Isotherm::Type::Langmuir)
+        if (components[i].isotherm.sites[j].type != Isotherm::Type::Langmuir)
         {
           throw std::runtime_error("Error: Explicit mixture prediction must use single Langmuir isotherms");
         }
@@ -687,57 +684,55 @@ InputReader::InputReader(const std::string fileName):
     }
   }
 
-
   maxIsothermTerms = 0;
-  if(!components.empty())
+  if (!components.empty())
   {
-    std::vector<Component>::iterator maxIsothermTermsIterator = std::max_element(components.begin(), components.end(),
-              [] (Component& lhs, Component& rhs) {
-                  return lhs.isotherm.numberOfSites < rhs.isotherm.numberOfSites;
-              });
+    std::vector<Component>::iterator maxIsothermTermsIterator =
+        std::max_element(components.begin(), components.end(), [](Component& lhs, Component& rhs)
+                         { return lhs.isotherm.numberOfSites < rhs.isotherm.numberOfSites; });
     maxIsothermTerms = maxIsothermTermsIterator->isotherm.numberOfSites;
   }
 
-  if(simulationType == SimulationType::Breakthrough)
+  if (simulationType == SimulationType::Breakthrough)
   {
-    if(numberOfCarrierGases == 0)
+    if (numberOfCarrierGases == 0)
     {
       throw std::runtime_error("Error: no carrier gas component present");
     }
-    if(numberOfCarrierGases > 1)
+    if (numberOfCarrierGases > 1)
     {
       throw std::runtime_error("Error: multiple carrier gas component present (there can be only one)");
     }
-    if(temperature < 0.0)
+    if (temperature < 0.0)
     {
       throw std::runtime_error("Error: temperature not set (Use e.g.: 'Temperature 300'");
     }
-    if(columnVoidFraction < 0.0)
+    if (columnVoidFraction < 0.0)
     {
       throw std::runtime_error("Error: void-fraction of the colum not set (Use e.g.: 'ColumnVoidFraction 0.4'");
     }
-    if(particleDensity < 0.0)
+    if (particleDensity < 0.0)
     {
       throw std::runtime_error("Error: particle density not set (Use e.g.: 'ParticleDensity 1408.2'");
     }
-    if(totalPressure < 0.0)
+    if (totalPressure < 0.0)
     {
       throw std::runtime_error("Error: total pressure bot set (Use e.g.: 'TotalPressure 1e5'");
     }
-    if(columnEntranceVelocity < 0.0)
+    if (columnEntranceVelocity < 0.0)
     {
       throw std::runtime_error("Error: column entrance velocity not set (Use e.g.: 'columnEntranceVelocity 300'");
     }
 
-    if((numberOfTimeSteps == 0) && (!autoNumberOfTimeSteps))
+    if ((numberOfTimeSteps == 0) && (!autoNumberOfTimeSteps))
     {
       throw std::runtime_error("Error: number of time steps not set (Use e.g.: 'NumberOfTimeSteps 5000000'");
     }
-    if(numberOfGridPoints == 0)
+    if (numberOfGridPoints == 0)
     {
       throw std::runtime_error("Error: number of grid points not set (Use e.g.: 'NumberOfGridPoints 50'");
     }
-    if(columnLength < 0)
+    if (columnLength < 0)
     {
       throw std::runtime_error("Error: column length not set (Use e.g.: 'ColumnLength 0.3'");
     }
