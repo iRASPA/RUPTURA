@@ -73,7 +73,7 @@ rm -rf build
 
 to build and host the documentation
 ```
-cmake --build build documentation
+cmake --build build -- documentation
 cd build/html
 python -m http.server 8000
 ```
