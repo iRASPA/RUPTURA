@@ -1,0 +1,40 @@
+SimulationType           Breakthrough
+
+// Column settings
+DisplayName              CALF-20
+Temperature              298.15           // [K]    Feed Gas Temperature, scaling variable for Temperature
+ColumnVoidFraction       0.4             // [-]
+ParticleDensity          520         // [kg/m^3]
+TotalPressure            10e05           // [Pa]    Total pressure, scaling variable for Pressure
+PressureGradient         0             // [Pa/m]
+ColumnEntranceVelocity   0.50             // [m/s]  Interstitial velocity, scaling variable for velocity and time
+ColumnLength             0.50             // [m]    Total pressure, scaling variable for step length and time
+
+// Run settings
+NumberOfTimeSteps       1000000
+PrintEvery              100
+WriteEvery              100
+TimeStep                1e-8
+NumberOfGridPoints      20
+MixturePredictionMethod IAST            // Not used
+
+Component 0 MoleculeName               Helium
+            GasPhaseMolFraction        0.90     // [-]
+            CarrierGas                 yes
+
+Component 1 MoleculeName               CO2
+            GasPhaseMolFraction        0.05    // [-]
+            MassTransferCoefficient    0.20    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s]
+            NumberOfIsothermSites      2
+            Langmuir                   0 0     // Please specify in the breakthrough cpp file: initialize function
+            Langmuir                   0 0     // Please specify in the breakthrough cpp file: initialize function
+
+Component 2 MoleculeName               N2
+            GasPhaseMolFraction        0.05    // [-]
+            MassTransferCoefficient    0.20    // [1/s]
+            AxialDispersionCoefficient 0.0     // [m^2/s] 
+            NumberOfIsothermSites      1       // Please specify in the breakthrough cpp file: initialize function
+            Langmuir                   0 0     // Please specify in the breakthrough cpp file: initialize function
+
+// Please specify all the other neccessary parameters and properties in the breakthrough cpp file: initialize function.
