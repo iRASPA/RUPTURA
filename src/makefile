@@ -1,4 +1,4 @@
-CXXFLAGS=-g -O3 -std=c++17 -march=native -ffast-math -Wall -Wextra -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wpedantic -Wconversion -Wsign-conversion -Wnull-dereference -Wdouble-promotion -Wformat=2 -Werror -fomit-frame-pointer -ftree-vectorize -fno-stack-check -funroll-loops
+CXXFLAGS=-g -O0 -std=c++17 -march=native -Wall -Wextra -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wpedantic -Wconversion -Wsign-conversion -Wnull-dereference -Wdouble-promotion -Wformat=2 -Werror -fomit-frame-pointer -ftree-vectorize -fno-stack-check -funroll-loops
 
 default: ruptura;
 
@@ -36,4 +36,4 @@ ruptura: random_numbers.o special_functions.o isotherm.o multi_site_isotherm.o c
 	$(CXX) main.o fitting.o breakthrough.o inputreader.o mixture_prediction.o component.o multi_site_isotherm.o isotherm.o special_functions.o random_numbers.o -o ruptura
 
 clean:
-	rm -f *.pcm *.o *.a ruptura
+	rm -f *.pcm *.a ruptura

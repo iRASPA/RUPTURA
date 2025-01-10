@@ -1,28 +1,29 @@
 #include <exception>
 
-#include "breakthrough.h"
-#include "fitting.h"
-#include "inputreader.h"
-#include "mixture_prediction.h"
 #include "special_functions.h"
+
+#include "inputreader.h"
+#include "breakthrough.h"
+#include "mixture_prediction.h"
+#include "fitting.h"
 
 int main(void)
 {
-  try
+  try 
   {
     InputReader reader("simulation.input");
 
-    switch (reader.simulationType)
+    switch(reader.simulationType)
     {
       case InputReader::SimulationType::Breakthrough:
       default:
       {
         Breakthrough breakthrough(reader);
 
-        breakthrough.print();
+        std::cout << breakthrough.repr();
         breakthrough.initialize();
-        breakthrough.createPlotScript();
-        breakthrough.createMovieScripts();
+        // breakthrough.createPlotScript();     Not used because I have not modified these based on new equations
+        // breakthrough.createMovieScripts();   Not used because I have not modified these based on new equations
         breakthrough.run();
         break;
       }
@@ -30,13 +31,13 @@ int main(void)
       {
         MixturePrediction mixture(reader);
 
-        mixture.print();
+        std::cout << mixture.repr();
         mixture.run();
         mixture.createPureComponentsPlotScript();
         mixture.createMixturePlotScript();
         mixture.createMixtureAdsorbedMolFractionPlotScript();
         mixture.createPlotScript();
-        mixture.print();
+        std::cout << mixture.repr();
         break;
       }
       case InputReader::SimulationType::Fitting:
