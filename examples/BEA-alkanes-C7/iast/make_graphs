@@ -1,6 +1,0 @@
-#!/bin/sh
-export LC_ALL='en_US.UTF-8'
-cd -- "$(dirname "$0")"
-gnuplot plot_pure_components
-gnuplot plot_mixture
-gnuplot plot_mixture_mol_fractions
