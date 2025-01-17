@@ -30,6 +30,7 @@ test_*
 restart_data.bin
 examples/*/*/run
 **/run
+src/ruptura
 
 dependencies.sh
 examples/*/*/output/

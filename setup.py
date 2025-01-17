@@ -27,5 +27,5 @@ setup(
     ext_modules=ext_modules,
     zip_safe=False,
     packages=["ruptura"],
-    package_dir={"ruptura": "ruptura"},
+    package_dir={"ruptura": "src"},
 )
