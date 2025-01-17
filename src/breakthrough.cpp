@@ -1,100 +1,101 @@
-#include <cmath>
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <limits>
 #include <algorithm>
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <limits>
 #include <numeric>
 #include <sstream>
+#include <string>
 #if __cplusplus >= 201703L && __has_include(<filesystem>)
-  #include <filesystem>
+#include <filesystem>
 #elif __cplusplus >= 201703L && __has_include(<experimental/filesystem>)
-  #include <experimental/filesystem>
+#include <experimental/filesystem>
 #else
-  #include <sys/stat.h>
+#include <sys/stat.h>
 #endif
 
 #include "breakthrough.h"
 
-const double R=8.31446261815324;
+const double R = 8.31446261815324;
 
 inline double maxVectorDifference(const std::vector<double> &v, const std::vector<double> &w)
 {
-  if(v.empty() || w.empty()) return 0.0;
-  if(v.size() != w.size()) throw std::runtime_error("Error: unequal vector size\n");
+  if (v.empty() || w.empty()) return 0.0;
+  if (v.size() != w.size()) throw std::runtime_error("Error: unequal vector size\n");
 
   double max = std::abs(v[0] - w[0]);
-  for(size_t i = 1; i < v.size(); ++i)
+  for (size_t i = 1; i < v.size(); ++i)
   {
     double temp = std::abs(v[i] - w[i]);
-    if(temp > max) max = temp;
+    if (temp > max) max = temp;
   }
   return max;
 }
 
-
 // allow std::pairs to be added
-template <typename T,typename U>                                                   
-std::pair<T,U> operator+(const std::pair<T,U> & l,const std::pair<T,U> & r) {   
-    return {l.first+r.first,l.second+r.second};
+template <typename T, typename U>
+std::pair<T, U> operator+(const std::pair<T, U> &l, const std::pair<T, U> &r)
+{
+  return {l.first + r.first, l.second + r.second};
 }
 template <typename T, typename U>
-std::pair<T,U> &operator+=(std::pair<T,U> & l, const std::pair<T,U> & r) {   
-    l.first += r.first;
-    l.second += r.second;
-    return l;
+std::pair<T, U> &operator+=(std::pair<T, U> &l, const std::pair<T, U> &r)
+{
+  l.first += r.first;
+  l.second += r.second;
+  return l;
 }
 // Constructor declaration with initializer list
-Breakthrough::Breakthrough(const InputReader &inputReader):
-    displayName(inputReader.displayName),
-    components(inputReader.components),
-    carrierGasComponent(inputReader.carrierGasComponent),
-    Ncomp(components.size()),
-    Ngrid(inputReader.numberOfGridPoints),
-    printEvery(inputReader.printEvery),
-    writeEvery(inputReader.writeEvery),
-    T_gas(inputReader.temperature),
-    p_total(inputReader.totalPressure),
-    dptdx(inputReader.pressureGradient),
-    epsilon(inputReader.columnVoidFraction),
-    rho_p(inputReader.particleDensity),
-    v_in(inputReader.columnEntranceVelocity),
-    L(inputReader.columnLength),
-    dx(L / static_cast<double>(Ngrid)),
-    dt(inputReader.timeStep),
-    Nsteps(inputReader.numberOfTimeSteps),
-    autoSteps(inputReader.autoNumberOfTimeSteps),
-    pulse(inputReader.pulseBreakthrough),
-    tpulse(inputReader.pulseTime),
-    mixture(inputReader),
-    maxIsothermTerms(inputReader.maxIsothermTerms),
-    prefactor(Ncomp),
-    Yi(Ncomp),
-    Xi(Ncomp),
-    Ni(Ncomp),
-    V(Ngrid+1),
-    Vnew(Ngrid+1),
-    Pt(Ngrid+1),
-    T(Ngrid + 1),
-    Tnew(Ngrid + 1),
-    DTdt(Ngrid + 1),
-    DTdtnew(Ngrid + 1),
-    P(Ngrid + 1),
-    Pnew(Ngrid + 1),
-    DPdt(Ngrid + 1),
-    DPdtnew(Ngrid + 1),
-    y((Ngrid + 1) * Ncomp),
-    ynew((Ngrid + 1) * Ncomp),
-    Dydt((Ngrid + 1) * Ncomp),
-    Dydtnew((Ngrid + 1) * Ncomp),
-    Q((Ngrid + 1) * Ncomp),
-    Qnew((Ngrid + 1) * Ncomp),
-    Qeq((Ngrid + 1) * Ncomp),
-    Qeqnew((Ngrid + 1) * Ncomp),
-    Dqdt((Ngrid + 1) * Ncomp),
-    Dqdtnew((Ngrid + 1) * Ncomp),
-    cachedP0((Ngrid + 1) * Ncomp * maxIsothermTerms),
-    cachedPsi((Ngrid + 1) * maxIsothermTerms) 
+Breakthrough::Breakthrough(const InputReader &inputReader)
+    : displayName(inputReader.displayName),
+      components(inputReader.components),
+      carrierGasComponent(inputReader.carrierGasComponent),
+      Ncomp(components.size()),
+      Ngrid(inputReader.numberOfGridPoints),
+      printEvery(inputReader.printEvery),
+      writeEvery(inputReader.writeEvery),
+      T_gas(inputReader.temperature),
+      p_total(inputReader.totalPressure),
+      dptdx(inputReader.pressureGradient),
+      epsilon(inputReader.columnVoidFraction),
+      rho_p(inputReader.particleDensity),
+      v_in(inputReader.columnEntranceVelocity),
+      L(inputReader.columnLength),
+      dx(L / static_cast<double>(Ngrid)),
+      dt(inputReader.timeStep),
+      Nsteps(inputReader.numberOfTimeSteps),
+      autoSteps(inputReader.autoNumberOfTimeSteps),
+      pulse(inputReader.pulseBreakthrough),
+      tpulse(inputReader.pulseTime),
+      mixture(inputReader),
+      maxIsothermTerms(inputReader.maxIsothermTerms),
+      prefactor(Ncomp),
+      Yi(Ncomp),
+      Xi(Ncomp),
+      Ni(Ncomp),
+      V(Ngrid + 1),
+      Vnew(Ngrid + 1),
+      Pt(Ngrid + 1),
+      T(Ngrid + 1),
+      Tnew(Ngrid + 1),
+      DTdt(Ngrid + 1),
+      DTdtnew(Ngrid + 1),
+      P(Ngrid + 1),
+      Pnew(Ngrid + 1),
+      DPdt(Ngrid + 1),
+      DPdtnew(Ngrid + 1),
+      y((Ngrid + 1) * Ncomp),
+      ynew((Ngrid + 1) * Ncomp),
+      Dydt((Ngrid + 1) * Ncomp),
+      Dydtnew((Ngrid + 1) * Ncomp),
+      Q((Ngrid + 1) * Ncomp),
+      Qnew((Ngrid + 1) * Ncomp),
+      Qeq((Ngrid + 1) * Ncomp),
+      Qeqnew((Ngrid + 1) * Ncomp),
+      Dqdt((Ngrid + 1) * Ncomp),
+      Dqdtnew((Ngrid + 1) * Ncomp),
+      cachedP0((Ngrid + 1) * Ncomp * maxIsothermTerms),
+      cachedPsi((Ngrid + 1) * maxIsothermTerms)
 {
 }
 Breakthrough::Breakthrough(std::string _displayName, std::vector<Component> _components, size_t _carrierGasComponent,
@@ -160,22 +161,22 @@ Breakthrough::Breakthrough(std::string _displayName, std::vector<Component> _com
 void Breakthrough::initialize()
 {
   // Hassan: Initializing vectors to store dummy values and node wall values
-  P_dum = std::vector <double> (Ngrid+1, 0.0);
-  y_dum = std::vector <double> ((Ngrid+1)*Ncomp, 0.0);
-  T_dum = std::vector <double> (Ngrid+1, 0.0);
+  P_dum = std::vector<double>(Ngrid + 1, 0.0);
+  y_dum = std::vector<double>((Ngrid + 1) * Ncomp, 0.0);
+  T_dum = std::vector<double>(Ngrid + 1, 0.0);
 
   // The size is Ngrid+1 because these vectors store the values of outlet (right wall of Ngrid node as well)
-  Ph = std::vector <double> (Ngrid+1, 0.0);
-  yh = std::vector <double> ((Ngrid+1)*Ncomp, 0.0);
-  Th = std::vector <double> (Ngrid+1, 0.0);
-  
+  Ph = std::vector<double>(Ngrid + 1, 0.0);
+  yh = std::vector<double>((Ngrid + 1) * Ncomp, 0.0);
+  Th = std::vector<double>(Ngrid + 1, 0.0);
+
   // Hassan Properties and Parameters
-  K_z = 0.09;                        
-  C_ps = 750.0;                      
-  C_pg = 35.8;                       
-  C_pa = 35.8;                       
-  mu = 1.13e-05;                     
-  r_p = 5.0e-03;                     
+  K_z = 0.09;
+  C_ps = 750.0;
+  C_pg = 35.8;
+  C_pa = 35.8;
+  mu = 1.13e-05;
+  r_p = 5.0e-03;
   Q_s0 = 3.0;
   MW = {0.004, 0.044, 0.028};
 
@@ -187,13 +188,13 @@ void Breakthrough::initialize()
   T_ref = 273.00;
 
   // Initialize nondimensional time step and grid
-  dt = dt * v_in/L;
-  dx = dx / L;                     
+  dt = dt * v_in / L;
+  dx = dx / L;
   // precomputed factor for mass transfer
   // Hassan: Directly computed at runtime for every iteration because of variable temperature
   // for(size_t j = 0; j < Ncomp; ++j)
   // {
-    // prefactor[j] = R * T * ((1.0 - epsilon) / epsilon) * rho_p * components[j].Kl;
+  // prefactor[j] = R * T * ((1.0 - epsilon) / epsilon) * rho_p * components[j].Kl;
   // }
 
   // set P and Q to zero
@@ -201,12 +202,12 @@ void Breakthrough::initialize()
   std::fill(Q.begin(), Q.end(), 0.0);
 
   // Hassan: Initialize the temperature and mole fractions
-  std::fill(T.begin(), T.end(), T_gas/T_gas);   // Equal to T_gas
+  std::fill(T.begin(), T.end(), T_gas / T_gas);  // Equal to T_gas
   std::fill(y.begin(), y.end(), 0.0);
 
   // set the molefraction of the carrier gas equal to 1.0, as column is initially filled with carrier gas only.
   // for the column except for the entrance (i=0)
-  for(size_t i = 1; i < Ngrid + 1; ++i)
+  for (size_t i = 1; i < Ngrid + 1; ++i)
   {
     y[i * Ncomp + carrierGasComponent] = 1.0;
   }
@@ -217,42 +218,43 @@ void Breakthrough::initialize()
   // set the initial total pressure along the column assuming the pressure gradient is constant
   // for(size_t i = 0; i < Ngrid + 1; ++i)
   // {
-    // pt_init[i] = (p_total + dptdx * static_cast<double>(i) * dx*L) / p_total;
-    // pt_init[i] = (p_total - dptdx * static_cast<double>(Ngrid-i) * dx*L) / p_total;
+  // pt_init[i] = (p_total + dptdx * static_cast<double>(i) * dx*L) / p_total;
+  // pt_init[i] = (p_total - dptdx * static_cast<double>(Ngrid-i) * dx*L) / p_total;
   // }
 
   // Pressure Profile initialization based on Ergun equation
   double sum_y;
-  double vis_term = 150.0 * mu * std::pow((1-epsilon), 2) 
-                    / 4.0 / std::pow(r_p, 2) / std::pow(epsilon, 2);
+  double vis_term = 150.0 * mu * std::pow((1 - epsilon), 2) / 4.0 / std::pow(r_p, 2) / std::pow(epsilon, 2);
 
-  pt_init[Ngrid] = p_total/p_total;
-  for(size_t i = Ngrid-1; i >= 1; --i)
+  pt_init[Ngrid] = p_total / p_total;
+  for (size_t i = Ngrid - 1; i >= 1; --i)
   {
     sum_y = 0.0;
-    for(size_t j = 0; j < Ncomp; ++j)
+    for (size_t j = 0; j < Ncomp; ++j)
     {
       sum_y += y[i * Ncomp + j] * MW[j];
-    } 
-    pt_init[i] = ((vis_term*v_in*dx*L/p_total) + pt_init[i+1]) 
-          / (1.0 - (dx*L/R/T[i]/T_gas)*sum_y*((1.75*(1-epsilon))/2.0/r_p/epsilon)*std::pow(v_in, 2.0));
+    }
+    pt_init[i] = ((vis_term * v_in * dx * L / p_total) + pt_init[i + 1]) /
+                 (1.0 - (dx * L / R / T[i] / T_gas) * sum_y * ((1.75 * (1 - epsilon)) / 2.0 / r_p / epsilon) *
+                            std::pow(v_in, 2.0));
   }
   // For 1st node half cell approximation
-  pt_init[0] = ((vis_term*v_in*dx/2.0*L/p_total) + pt_init[1]) 
-        / (1.0 - (dx/2.0*L/R/T[0]/T_gas)*sum_y*((1.75*(1-epsilon))/2.0/r_p/epsilon)*std::pow(v_in, 2.0));
+  pt_init[0] = ((vis_term * v_in * dx / 2.0 * L / p_total) + pt_init[1]) /
+               (1.0 - (dx / 2.0 * L / R / T[0] / T_gas) * sum_y * ((1.75 * (1 - epsilon)) / 2.0 / r_p / epsilon) *
+                          std::pow(v_in, 2.0));
 
   // initialize the interstitial gas velocity in the column
-  for(size_t i = 0; i < Ngrid + 1; ++i)
+  for (size_t i = 0; i < Ngrid + 1; ++i)
   {
     // V[i] = v_in * p_total / pt_init[i];
     // V[i] = (v_in * 1 / pt_init[i]) / v_in;
-    V[i] = v_in/v_in;
+    V[i] = v_in / v_in;
   }
 
   // at the column entrance, the mol-fractions of the components in the gas phase are fixed
-  // the partial pressures of the components at the entrance are the mol-fractions times the 
+  // the partial pressures of the components at the entrance are the mol-fractions times the
   // total pressure
-  for(size_t j = 0; j < Ncomp; ++j)
+  for (size_t j = 0; j < Ncomp; ++j)
   {
     // P[0 * Ncomp + j] = p_total * components[j].Yi0;
     y[0 * Ncomp + j] = components[j].Yi0;
@@ -261,10 +263,10 @@ void Breakthrough::initialize()
   // at the entrance: mol-fractions Yi are the gas-phase mol-fractions
   // for the column: the initial mol-fraction of the carrier-gas is 1, and 0 for the other components
   //
-  // the K of the carrier gas is chosen as zero 
+  // the K of the carrier gas is chosen as zero
   // so Qeq is zero for all components in the column after the entrance
   // only the values for Yi at the entrance are effected by adsorption
-  for(size_t i = 0; i < Ngrid + 1; ++i)
+  for (size_t i = 0; i < Ngrid + 1; ++i)
   {
     // double sum = 0.0;
     // for(size_t j = 0; j < Ncomp; ++j)
@@ -272,25 +274,24 @@ void Breakthrough::initialize()
     //   Yi[j] = std::max(P[i * Ncomp + j] / pt_init[i], 0.0);
     //   sum += Yi[j];
     // }
-    for(size_t j = 0; j < Ncomp; ++j)
+    for (size_t j = 0; j < Ncomp; ++j)
     {
       Yi[j] = std::max(y[i * Ncomp + j], 0.0);
     }
 
-    // iastPerformance += mixture.predictMixture(Yi, pt_init[i], Xi, Ni, 
+    // iastPerformance += mixture.predictMixture(Yi, pt_init[i], Xi, Ni,
     //     &cachedP0[i * Ncomp * maxIsothermTerms], &cachedPsi[i * maxIsothermTerms]);
 
-  
-    iastPerformance += mixture.predictMixture(Yi, pt_init[i]*p_total, Xi, Ni, 
-        &cachedP0[i * Ncomp * maxIsothermTerms], &cachedPsi[i * maxIsothermTerms]);
+    iastPerformance += mixture.predictMixture(Yi, pt_init[i] * p_total, Xi, Ni, &cachedP0[i * Ncomp * maxIsothermTerms],
+                                              &cachedPsi[i * maxIsothermTerms]);
 
-    for(size_t j = 0; j < Ncomp; ++j)
+    for (size_t j = 0; j < Ncomp; ++j)
     {
       Qeq[i * Ncomp + j] = Ni[j];
     }
   }
 
-  for(size_t i = 0; i < Ngrid + 1; ++i)
+  for (size_t i = 0; i < Ngrid + 1; ++i)
   {
     // Initial pressure profile is same as pt_init
     P[i] += std::max(pt_init[i], 0.0);
@@ -359,24 +360,24 @@ void Breakthrough::run()
         //            << P[Ngrid * Ncomp + j] / ((p_total + dptdx * L) * components[j].Yi0) << std::endl;
         // streams[j] << t * v_in / L << " " << t / 60.0 << " "
         //            << y[Ngrid * Ncomp + j] / components[j].Yi0 << std::endl;
-        streams[j] << t * L / v_in << " " << t * L / v_in / 60.0 << " "
-                   << y[Ngrid * Ncomp + j] / components[j].Yi0 << std::endl;
+        streams[j] << t * L / v_in << " " << t * L / v_in / 60.0 << " " << y[Ngrid * Ncomp + j] / components[j].Yi0
+                   << std::endl;
       }
 
       for (size_t i = 0; i < Ngrid + 1; ++i)
       {
-        movieStream << static_cast<double>(i) * dx*L << " ";
+        movieStream << static_cast<double>(i) * dx * L << " ";
         movieStream << V[i] * v_in << " ";
-        movieStream << P[i] * p_total<< " ";
-        movieStream << T[i] * T_gas<< " ";
-        movieStream << DPdt[i] * p_total*v_in/L<< " ";
-        movieStream << DTdt[i] * T_gas*v_in/L<< " ";
+        movieStream << P[i] * p_total << " ";
+        movieStream << T[i] * T_gas << " ";
+        movieStream << DPdt[i] * p_total * v_in / L << " ";
+        movieStream << DTdt[i] * T_gas * v_in / L << " ";
 
         for (size_t j = 0; j < Ncomp; ++j)
         {
           movieStream << Q[i * Ncomp + j] * Q_s0 << " " << Qeq[i * Ncomp + j] << " " << y[i * Ncomp + j] << " "
-                      << y[i * Ncomp + j] / (components[j].Yi0) << " " << Dydt[i * Ncomp + j] * v_in/L<< " "
-                      << Dqdt[i * Ncomp + j] * Q_s0*v_in/L << " ";
+                      << y[i * Ncomp + j] / (components[j].Yi0) << " " << Dydt[i * Ncomp + j] * v_in / L << " "
+                      << Dqdt[i * Ncomp + j] * Q_s0 * v_in / L << " ";
         }
         movieStream << "\n";
       }
@@ -408,8 +409,7 @@ void Breakthrough::computeStep(size_t step)
     double tolerance = 0.0;
     for (size_t j = 0; j < Ncomp; ++j)
     {
-      tolerance =
-          std::max(tolerance, std::abs((y[Ngrid * Ncomp + j] / (components[j].Yi0)) - 1.0));
+      tolerance = std::max(tolerance, std::abs((y[Ngrid * Ncomp + j] / (components[j].Yi0)) - 1.0));
     }
 
     // consider 1% as being visibily indistinguishable from 'converged'
@@ -437,29 +437,30 @@ void Breakthrough::computeStep(size_t step)
     {
       Qnew[i * Ncomp + j] = std::max(Q[i * Ncomp + j] + dt * Dqdt[i * Ncomp + j], 0.0);
     }
-    
+
     // Loop for all components except Carrier gas
     double sum_y = 0.0;
     for (size_t j = 1; j < Ncomp; ++j)
     {
       ynew[i * Ncomp + j] = std::max(y[i * Ncomp + j] + dt * Dydt[i * Ncomp + j], 0.0);
       ynew[i * Ncomp + j] = std::min(ynew[i * Ncomp + j], 1.0);
-      sum_y += ynew[i * Ncomp + j]; 
+      sum_y += ynew[i * Ncomp + j];
     }
 
     // Carrier gas mole fraction is computed using molefractions of other components
     ynew[i * Ncomp + carrierGasComponent] = std::max((1.0 - sum_y), 0.0);
-    
+
     // Add equation for Tnew and Pnew
     Tnew[i] = std::max(T[i] + dt * DTdt[i], 0.0);
     Pnew[i] = std::max(P[i] + dt * DPdt[i], 0.0);
   }
 
   computeEquilibriumLoadings();
-  for (size_t i = 0; i<Ngrid+1; ++i)
+  for (size_t i = 0; i < Ngrid + 1; ++i)
   {
-    if (Pnew[i]<=0.0){
-      throw std::runtime_error("Error: Pressure becoming zero\n"); 
+    if (Pnew[i] <= 0.0)
+    {
+      throw std::runtime_error("Error: Pressure becoming zero\n");
     }
   }
   // computeVelocity();
@@ -475,13 +476,15 @@ void Breakthrough::computeStep(size_t step)
   {
     for (size_t j = 0; j < Ncomp; ++j)
     {
-      Qnew[i * Ncomp + j] = std::max(0.75 * Q[i * Ncomp + j] + 0.25 * Qnew[i * Ncomp + j] + 0.25 * dt * Dqdtnew[i * Ncomp + j], 0.0);
+      Qnew[i * Ncomp + j] =
+          std::max(0.75 * Q[i * Ncomp + j] + 0.25 * Qnew[i * Ncomp + j] + 0.25 * dt * Dqdtnew[i * Ncomp + j], 0.0);
     }
 
     double sum_y = 0.0;
     for (size_t j = 1; j < Ncomp; ++j)
     {
-      ynew[i * Ncomp + j] = std::max(0.75 * y[i * Ncomp + j] + 0.25 * ynew[i * Ncomp + j] + 0.25 * dt * Dydtnew[i * Ncomp + j], 0.0);
+      ynew[i * Ncomp + j] =
+          std::max(0.75 * y[i * Ncomp + j] + 0.25 * ynew[i * Ncomp + j] + 0.25 * dt * Dydtnew[i * Ncomp + j], 0.0);
       ynew[i * Ncomp + j] = std::min(ynew[i * Ncomp + j], 1.0);
       sum_y += ynew[i * Ncomp + j];
     }
@@ -495,10 +498,11 @@ void Breakthrough::computeStep(size_t step)
 
   computeEquilibriumLoadings();
 
-  for (size_t i = 0; i<Ngrid+1; ++i)
+  for (size_t i = 0; i < Ngrid + 1; ++i)
   {
-    if (Pnew[i]<=0.0){
-      throw std::runtime_error("Error: Pressure becoming zero\n"); 
+    if (Pnew[i] <= 0.0)
+    {
+      throw std::runtime_error("Error: Pressure becoming zero\n");
     }
   }
   // computeVelocity();
@@ -508,25 +512,27 @@ void Breakthrough::computeStep(size_t step)
 
   // calculate new derivatives at new (current) timestep
   // calculate the derivatives Dq/dt and Dp/dt based on Qeq, Q, V, and P at new (current) timestep
-  computeFirstDerivatives(Dqdtnew, DPdtnew, DTdtnew, Dydtnew,  Qeqnew, Qnew, Pnew, Tnew, ynew);
+  computeFirstDerivatives(Dqdtnew, DPdtnew, DTdtnew, Dydtnew, Qeqnew, Qnew, Pnew, Tnew, ynew);
 
   for (size_t i = 0; i < Ngrid + 1; ++i)
   {
     for (size_t j = 0; j < Ncomp; ++j)
     {
       Qnew[i * Ncomp + j] = std::max((1.0 / 3.0) * Q[i * Ncomp + j] + (2.0 / 3.0) * Qnew[i * Ncomp + j] +
-                            (2.0 / 3.0) * dt * Dqdtnew[i * Ncomp + j], 0.0);
+                                         (2.0 / 3.0) * dt * Dqdtnew[i * Ncomp + j],
+                                     0.0);
     }
 
     double sum_y = 0.0;
     for (size_t j = 1; j < Ncomp; ++j)
     {
       ynew[i * Ncomp + j] = std::max((1.0 / 3.0) * y[i * Ncomp + j] + (2.0 / 3.0) * ynew[i * Ncomp + j] +
-                            (2.0 / 3.0) * dt * Dydtnew[i * Ncomp + j], 0.0);
+                                         (2.0 / 3.0) * dt * Dydtnew[i * Ncomp + j],
+                                     0.0);
       ynew[i * Ncomp + j] = std::min(ynew[i * Ncomp + j], 1.0);
       sum_y += ynew[i * Ncomp + j];
     }
-    
+
     // Carrier gas mole fraction is computed using molefractions of other components
     ynew[i * Ncomp + carrierGasComponent] = std::max((1.0 - sum_y), 0.0);
 
@@ -536,15 +542,15 @@ void Breakthrough::computeStep(size_t step)
 
   computeEquilibriumLoadings();
 
-  for (size_t i = 0; i<Ngrid+1; ++i)
+  for (size_t i = 0; i < Ngrid + 1; ++i)
   {
-    if (Pnew[i]<=0.0){
-      throw std::runtime_error("Error: Pressure becoming zero \n"); 
+    if (Pnew[i] <= 0.0)
+    {
+      throw std::runtime_error("Error: Pressure becoming zero \n");
     }
   }
   // computeVelocity();
-  
-  
+
   // update to the new time step
   std::copy(Qnew.begin(), Qnew.end(), Q.begin());
   std::copy(Pnew.begin(), Pnew.end(), P.begin());
@@ -557,13 +563,13 @@ void Breakthrough::computeStep(size_t step)
   // pulse boundary condition
   if (pulse == true)
   {
-    if (t*L/v_in > tpulse)
+    if (t * L / v_in > tpulse)
     {
       for (size_t j = 0; j < Ncomp; ++j)
       {
         if (j == carrierGasComponent)
         {
-          y[0 * Ncomp + j] = p_total/p_total;
+          y[0 * Ncomp + j] = p_total / p_total;
         }
         else
         {
@@ -578,13 +584,13 @@ void Breakthrough::computeEquilibriumLoadings()
 {
   // Hassan modification
   // extended lagnmuir model instead of IAST
-  std::vector <double> b(Ncomp);
-  std::vector <double> d(Ncomp);
+  std::vector<double> b(Ncomp);
+  std::vector<double> d(Ncomp);
   double den_b = 1.0;
   double den_d = 1.0;
 
   // calculate new equilibrium loadings Qeqnew corresponding to the new timestep
-  for(size_t i = 0; i < Ngrid + 1; ++i)
+  for (size_t i = 0; i < Ngrid + 1; ++i)
   {
     // estimation of total pressure Pt at each grid point from partial pressures
     // Hassan: Pt is a dummy variable to be used only for mixture prediction
@@ -612,73 +618,68 @@ void Breakthrough::computeEquilibriumLoadings()
     // }
     den_b = 1.0;
     den_d = 1.0;
-    for(size_t j = 0; j < Ncomp; ++j)
+    for (size_t j = 0; j < Ncomp; ++j)
     {
       // Yi[j] /= sum;
-      b[j] = b_0[j] * std::exp(-del_H[j]/R * (1.0/Tnew[i]/T_gas - 1.0/T_ref));
-      d[j] = d_0[j] * std::exp(-del_H[j]/R * (1.0/Tnew[i]/T_gas - 1.0/T_ref));
+      b[j] = b_0[j] * std::exp(-del_H[j] / R * (1.0 / Tnew[i] / T_gas - 1.0 / T_ref));
+      d[j] = d_0[j] * std::exp(-del_H[j] / R * (1.0 / Tnew[i] / T_gas - 1.0 / T_ref));
 
-      den_b += (b[j]*ynew[i * Ncomp + j]*Pt[i]*p_total);
-      den_d += (d[j]*ynew[i * Ncomp + j]*Pt[i]*p_total);
+      den_b += (b[j] * ynew[i * Ncomp + j] * Pt[i] * p_total);
+      den_d += (d[j] * ynew[i * Ncomp + j] * Pt[i] * p_total);
     }
 
-
     // use Yi and Pt[i] to compute the loadings in the adsorption mixture via mixture prediction
-    // iastPerformance += mixture.predictMixture(Yi, Pt[i]*p_total, Xi, Ni, 
+    // iastPerformance += mixture.predictMixture(Yi, Pt[i]*p_total, Xi, Ni,
     //     &cachedP0[i * Ncomp * maxIsothermTerms], &cachedPsi[i * maxIsothermTerms]);
 
-    for(size_t j = 0; j < Ncomp; ++j)
+    for (size_t j = 0; j < Ncomp; ++j)
     {
       // Qeqnew[i * Ncomp + j] = Ni[j];
-      Qeqnew[i * Ncomp + j] = sat_q_b[j]*b[j] * ynew[i * Ncomp + j]*Pt[i]*p_total / den_b
-                            + sat_q_d[j]*d[j] * ynew[i * Ncomp + j]*Pt[i]*p_total / den_d;
+      Qeqnew[i * Ncomp + j] = sat_q_b[j] * b[j] * ynew[i * Ncomp + j] * Pt[i] * p_total / den_b +
+                              sat_q_d[j] * d[j] * ynew[i * Ncomp + j] * Pt[i] * p_total / den_d;
     }
   }
 
   // check the total pressure at the outlet, it should not be negative
-  if (Pt[Pt.size()-1] < 0.0)
+  if (Pt[Pt.size() - 1] < 0.0)
   {
-    throw std::runtime_error("Error: pressure gradient is too large/ Or some other problem (negative outlet pressure)\n");
+    throw std::runtime_error(
+        "Error: pressure gradient is too large/ Or some other problem (negative outlet pressure)\n");
   }
 }
 
-
 // calculate the derivatives Dq/dt and Dp/dt along the column
-void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt,
-                                           std::vector<double> &dpdt,
-                                           std::vector<double> &dTdt,
-                                           std::vector<double> &dydt,
-                                           const std::vector<double> &q_eq,
-                                           const std::vector<double> &q,
-                                           const std::vector<double> &p,
-                                           const std::vector<double> &T_vec,
+void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt, std::vector<double> &dpdt,
+                                           std::vector<double> &dTdt, std::vector<double> &dydt,
+                                           const std::vector<double> &q_eq, const std::vector<double> &q,
+                                           const std::vector<double> &p, const std::vector<double> &T_vec,
                                            const std::vector<double> &y_vec)
 {
   double idx = 1.0 / dx;
   double idx2 = 1.0 / (dx * dx);
-  
+
   // %%%%%%%%%%%%%%%%%%%% Variables required for balances equations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  std::vector <double> ro_g(Ngrid+1);
-  std::vector <double> sink_term(Ngrid+1);
+  std::vector<double> ro_g(Ngrid + 1);
+  std::vector<double> sink_term(Ngrid + 1);
   double vis_term;
-  std::vector <double> kinetic_term_h(Ngrid+1);
+  std::vector<double> kinetic_term_h(Ngrid + 1);
 
   // Variables for finite differences
-  std::vector <double> dTdx(Ngrid+1, 0.0);
-  std::vector <double> d2Tdx2(Ngrid+1, 0.0);
-  std::vector <double> dydx((Ngrid+1)*Ncomp, 0.0);
-  std::vector <double> d2ydx2((Ngrid+1)*Ncomp, 0.0);
-  std::vector <double> PvT(Ngrid+1, 0.0);
-  std::vector <double> Pv(Ngrid+1, 0.0);
-  std::vector <double> dPdx(Ngrid+1, 0.0);
-  std::vector <double> dPdxh(Ngrid+1, 0.0);
+  std::vector<double> dTdx(Ngrid + 1, 0.0);
+  std::vector<double> d2Tdx2(Ngrid + 1, 0.0);
+  std::vector<double> dydx((Ngrid + 1) * Ncomp, 0.0);
+  std::vector<double> d2ydx2((Ngrid + 1) * Ncomp, 0.0);
+  std::vector<double> PvT(Ngrid + 1, 0.0);
+  std::vector<double> Pv(Ngrid + 1, 0.0);
+  std::vector<double> dPdx(Ngrid + 1, 0.0);
+  std::vector<double> dPdxh(Ngrid + 1, 0.0);
   double dyPVT;
 
   // Velocity vector storing values as calculated using Ergun equation
-  std:: vector <double> v(Ngrid+1, 0.0);
-  
+  std::vector<double> v(Ngrid + 1, 0.0);
+
   // Variables for balance equations
-  double phi = R*rho_p*Q_s0*T_gas*(1-epsilon)/epsilon/p_total;
+  double phi = R * rho_p * Q_s0 * T_gas * (1 - epsilon) / epsilon / p_total;
   double dTdt1, dTdt2, dTdt3;
   double dPdt1, dPdt2, dPdt3;
   double dydt1, dydt2, dydt3;
@@ -692,32 +693,31 @@ void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt,
   std::copy(T_vec.begin(), T_vec.end(), T_dum.begin());
 
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Calculation of variable properties %%%%%%%%%%%%%%%%%%%%%%
-  vis_term = 150.0 * mu * std::pow((1-epsilon), 2) 
-                    / 4.0 / std::pow(r_p, 2) / std::pow(epsilon, 2);
+  vis_term = 150.0 * mu * std::pow((1 - epsilon), 2) / 4.0 / std::pow(r_p, 2) / std::pow(epsilon, 2);
 
-  for(size_t i = 0; i < Ngrid+1; i++)
+  for (size_t i = 0; i < Ngrid + 1; i++)
   {
     sum_q = 0.0;
-    for(size_t j = 0; j < Ncomp; ++j)
+    for (size_t j = 0; j < Ncomp; ++j)
     {
-      sum_q += q[i * Ncomp + j];                // Sum of adsorbent loading
+      sum_q += q[i * Ncomp + j];  // Sum of adsorbent loading
     }
-    ro_g[i] = (P_dum[i]*p_total) / R / T_dum[i] / T_gas;
-    sink_term[i] = (1 - epsilon) * (rho_p*C_ps + rho_p*sum_q*C_pa)
-                  + (epsilon*ro_g[i]*C_pg);
+    ro_g[i] = (P_dum[i] * p_total) / R / T_dum[i] / T_gas;
+    sink_term[i] = (1 - epsilon) * (rho_p * C_ps + rho_p * sum_q * C_pa) + (epsilon * ro_g[i] * C_pg);
   }
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Inlet Boundary Pressure correction %%%%%%%%%%%%%%
   sum_y = 0.0;
-  for(size_t j = 0; j < Ncomp; ++j)
+  for (size_t j = 0; j < Ncomp; ++j)
   {
-    sum_y += (MW[j] * y_dum[0 * Ncomp + j]);    // sum of molar masses at the inlet node
+    sum_y += (MW[j] * y_dum[0 * Ncomp + j]);  // sum of molar masses at the inlet node
   }
-  
+
   // Inlet pressure is calculated using inlet velocity and 2nd grid point pressure based on Ergun's equation
   // Half cell approximation will be used to get the pressure at the inlet node (x=0)
-  P_dum[0] = ((vis_term*v_in*dx/2.0*L/p_total) + P_dum[1]) 
-          / (1.0 - (dx/2.0*L/R/T_dum[0]/T_gas)*sum_y*((1.75*(1-epsilon))/2.0/r_p/epsilon)*std::pow(v_in, 2.0));
+  P_dum[0] = ((vis_term * v_in * dx / 2.0 * L / p_total) + P_dum[1]) /
+             (1.0 - (dx / 2.0 * L / R / T_dum[0] / T_gas) * sum_y * ((1.75 * (1 - epsilon)) / 2.0 / r_p / epsilon) *
+                        std::pow(v_in, 2.0));
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% WENO Values Calculation  %%%%%%%%%%%%%%%%%%%%%%%%
   // Ph = compute_WENO(P_dum, true);
@@ -729,54 +729,54 @@ void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt,
   Ph = compute_UDS(P_dum, true);
   Th = compute_UDS(T_dum, false);
 
-  std::vector <double> y_comp_dum(Ngrid+1, 0.0);   // Vector to store values for individual component mole fraction
-  std::vector <double> yh_comp_dum(Ngrid+1, 0.0);  // Vector to store values for WENO calculation
+  std::vector<double> y_comp_dum(Ngrid + 1, 0.0);   // Vector to store values for individual component mole fraction
+  std::vector<double> yh_comp_dum(Ngrid + 1, 0.0);  // Vector to store values for WENO calculation
 
-  // Component vector WENO calculation 
-  for (size_t j=0; j<Ncomp; ++j)
+  // Component vector WENO calculation
+  for (size_t j = 0; j < Ncomp; ++j)
   {
-    for (size_t i=0; i<Ngrid+1; ++i)
+    for (size_t i = 0; i < Ngrid + 1; ++i)
     {
-      y_comp_dum[i] = y_dum[i * Ncomp + j]; 
+      y_comp_dum[i] = y_dum[i * Ncomp + j];
     }
     // Now calculate WENO based values
     // yh_comp_dum = compute_WENO(y_comp_dum, false);
     // yh_comp_dum = compute_TVD(y_comp_dum, false);
     yh_comp_dum = compute_UDS(y_comp_dum, false);
-    
+
     // Assigning the calculated WENO values to yh vector
-    for (size_t i=0; i<Ngrid+1; ++i)
+    for (size_t i = 0; i < Ngrid + 1; ++i)
     {
-      yh[i * Ncomp + j] = yh_comp_dum[i]; 
+      yh[i * Ncomp + j] = yh_comp_dum[i];
     }
   }
-  
+
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Velocity Calculation using Ergun equation %%%%%%%%%%%%%%%%%%%%%%%%%%%%
   // Calculate property values at the node walls using WENO calculated values
-  for(size_t i = 0; i < Ngrid+1; i++)
+  for (size_t i = 0; i < Ngrid + 1; i++)
   {
     sum_y = 0.0;
-    for(size_t j = 0; j < Ncomp; ++j)
+    for (size_t j = 0; j < Ncomp; ++j)
     {
       sum_y += (MW[j] * yh[i * Ncomp + j]);  // Sum of molar masses
     }
-    ro_g[i] = (Ph[i]*p_total) / R / Th[i] / T_gas;   // Gas Density based on wall values
-    kinetic_term_h[i] = (ro_g[i] * sum_y) * (1.75*(1-epsilon)) / 2.0 / r_p / epsilon;
+    ro_g[i] = (Ph[i] * p_total) / R / Th[i] / T_gas;  // Gas Density based on wall values
+    kinetic_term_h[i] = (ro_g[i] * sum_y) * (1.75 * (1 - epsilon)) / 2.0 / r_p / epsilon;
   }
 
-  // Pressure Gradient calculation at the walls 
-  dPdxh[0] = 2.0 * (P_dum[1] - P_dum[0]) * idx;           // Inlet grid point using half cell approximation
-  for(size_t i = 1; i < Ngrid; ++i)
+  // Pressure Gradient calculation at the walls
+  dPdxh[0] = 2.0 * (P_dum[1] - P_dum[0]) * idx;  // Inlet grid point using half cell approximation
+  for (size_t i = 1; i < Ngrid; ++i)
   {
-    dPdxh[i] = (P_dum[i+1] - P_dum[i]) * idx;
+    dPdxh[i] = (P_dum[i + 1] - P_dum[i]) * idx;
   }
   dPdxh[Ngrid] = 2.0 * (Ph[Ngrid] - P_dum[Ngrid]) * idx;  // Outlet grid point using half cell approximation
 
   // Calculate Velocity based on Ergun's equation
-  v[0] = v_in/v_in;     // first grid point
-  
-  for(size_t i = 1; i < Ngrid+1; ++i)
-  {  
+  v[0] = v_in / v_in;  // first grid point
+
+  for (size_t i = 1; i < Ngrid + 1; ++i)
+  {
     if (dPdxh[i] <= 0.0)
     {
       v_sign = 1;
@@ -785,10 +785,12 @@ void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt,
     {
       v_sign = -1;
     }
-    
-    v[i] = v_sign * (-vis_term + std::pow(
-              (std::abs(std::pow(vis_term, 2) + 4.0 * kinetic_term_h[i] * std::abs(dPdxh[i]*p_total/L))), 0.5))
-              / 2.0 / kinetic_term_h[i] / v_in;
+
+    v[i] = v_sign *
+           (-vis_term +
+            std::pow((std::abs(std::pow(vis_term, 2) + 4.0 * kinetic_term_h[i] * std::abs(dPdxh[i] * p_total / L))),
+                     0.5)) /
+           2.0 / kinetic_term_h[i] / v_in;
     if (std::isnan(v[i]))
     {
       std::cout << "Nan encountered" << std::endl;
@@ -800,113 +802,114 @@ void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt,
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Finite Difference Calculation %%%%%%%%%%%%%%%%%%%
   // First order differences based on WENO calculated values
-  for(size_t i = 1; i < Ngrid+1; i++)
+  for (size_t i = 1; i < Ngrid + 1; i++)
   {
-    for(size_t j = 0; j < Ncomp; ++j)
+    for (size_t j = 0; j < Ncomp; ++j)
     {
       // dydx[i * Ncomp + j] = (y_dum[i * Ncomp + j] - y_dum[(i-1) * Ncomp + j]) * idx;
-      dydx[i * Ncomp + j] = (yh[i * Ncomp + j] - yh[(i-1) * Ncomp + j]) * idx;
+      dydx[i * Ncomp + j] = (yh[i * Ncomp + j] - yh[(i - 1) * Ncomp + j]) * idx;
     }
     // dTdx[i] = (T_dum[i] - T_dum[i-1]) * idx;
-    dTdx[i] = (Th[i] - Th[i-1]) * idx;
-    
+    dTdx[i] = (Th[i] - Th[i - 1]) * idx;
+
     // Calculating the dPdz based on WENO Ph
     // dPdx[i] = (P_dum[i] - P_dum[i-1]) * idx;
-    dPdx[i] = (Ph[i] - Ph[i-1]) * idx;
+    dPdx[i] = (Ph[i] - Ph[i - 1]) * idx;
 
     // Pv[i] = (P_dum[i]*v[i] - P_dum[i-1]*v[i-1]) * idx;
     // PvT[i] = (P_dum[i]*v[i]/T_dum[i] - P_dum[i-1]*v[i-1]/T_dum[i-1]) * idx;
-    Pv[i] = (Ph[i]*v[i] - Ph[i-1]*v[i-1]) * idx;
-    PvT[i] = (Ph[i]*v[i]/Th[i] - Ph[i-1]*v[i-1]/Th[i-1]) * idx;
+    Pv[i] = (Ph[i] * v[i] - Ph[i - 1] * v[i - 1]) * idx;
+    PvT[i] = (Ph[i] * v[i] / Th[i] - Ph[i - 1] * v[i - 1] / Th[i - 1]) * idx;
   }
 
   // Second order differences
   // For 1st node, the differences have been calculated using half-cell approximations
-  for(size_t j = 0; j < Ncomp; ++j)
+  for (size_t j = 0; j < Ncomp; ++j)
   {
-    d2ydx2[1 * Ncomp + j] = (y_dum[2 * Ncomp + j] - 3.0*y_dum[1 * Ncomp + j] + 2.0*y_dum[0 * Ncomp + j]) * idx2;
+    d2ydx2[1 * Ncomp + j] = (y_dum[2 * Ncomp + j] - 3.0 * y_dum[1 * Ncomp + j] + 2.0 * y_dum[0 * Ncomp + j]) * idx2;
   }
-  d2Tdx2[1] = (T_dum[2] - 3.0*T_dum[1] + 2.0*T_dum[0]) * idx2;
+  d2Tdx2[1] = (T_dum[2] - 3.0 * T_dum[1] + 2.0 * T_dum[0]) * idx2;
 
   // For middle nodes
-  for(size_t i = 2; i < Ngrid; i++)
+  for (size_t i = 2; i < Ngrid; i++)
   {
-    for(size_t j = 0; j < Ncomp; ++j)
+    for (size_t j = 0; j < Ncomp; ++j)
     {
-      d2ydx2[i * Ncomp + j] = (y_dum[(i+1) * Ncomp + j] - 2.0*y_dum[i * Ncomp + j] + y_dum[(i-1) * Ncomp + j]) * idx2;
+      d2ydx2[i * Ncomp + j] =
+          (y_dum[(i + 1) * Ncomp + j] - 2.0 * y_dum[i * Ncomp + j] + y_dum[(i - 1) * Ncomp + j]) * idx2;
     }
-    
-    d2Tdx2[i] = (T_dum[i+1] - 2.0*T_dum[i] + T_dum[i-1]) * idx2;
+
+    d2Tdx2[i] = (T_dum[i + 1] - 2.0 * T_dum[i] + T_dum[i - 1]) * idx2;
   }
 
   // For last node
-  for(size_t j = 0; j < Ncomp; ++j)
+  for (size_t j = 0; j < Ncomp; ++j)
   {
-    d2ydx2[Ngrid * Ncomp + j] = (y_dum[(Ngrid-1) * Ncomp + j] - y_dum[Ngrid * Ncomp + j]) * idx2;
+    d2ydx2[Ngrid * Ncomp + j] = (y_dum[(Ngrid - 1) * Ncomp + j] - y_dum[Ngrid * Ncomp + j]) * idx2;
   }
-  d2Tdx2[Ngrid] = (T_dum[Ngrid-1] - T_dum[Ngrid]) * idx2;
-  
+  d2Tdx2[Ngrid] = (T_dum[Ngrid - 1] - T_dum[Ngrid]) * idx2;
+
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Balance equations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   // first/inlet  gridpoint, the conditions remains same
   dpdt[0] = 0.0;
   dTdt[0] = 0.0;
-  for(size_t j = 0; j < Ncomp; ++j)
+  for (size_t j = 0; j < Ncomp; ++j)
   {
     dydt[0 * Ncomp + j] = 0.0;
     // dqdt[0 * Ncomp + j] = (components[j].Kl * L/v_in) * (q_eq[0 * Ncomp + j]/Q_s0 - q[0 * Ncomp + j]);
     dqdt[0 * Ncomp + j] = 0.0;
   }
-  
+
   // middle gridpoint and Ngrid node
-  for(size_t i = 1; i < Ngrid+1; i++)
+  for (size_t i = 1; i < Ngrid + 1; i++)
   {
     // %%%%%%%%%%%%%%%%%%%%%%% Solid mass balance %%%%%%%%%%%%%%%%%%%%%%%%%%
-    for(size_t j = 0; j < Ncomp; ++j)
+    for (size_t j = 0; j < Ncomp; ++j)
     {
-      dqdt[i * Ncomp + j] = (components[j].Kl * L/v_in) * (q_eq[i * Ncomp + j]/Q_s0 - q[i * Ncomp + j]);
+      dqdt[i * Ncomp + j] = (components[j].Kl * L / v_in) * (q_eq[i * Ncomp + j] / Q_s0 - q[i * Ncomp + j]);
     }
-    
+
     // %%%%%%%%%%%%%%%%%%%%%%%%% Energy balance %%%%%%%%%%%%%%%%%%%%%%%%
-    dTdt1 = K_z/v_in/L * d2Tdx2[i] / sink_term[i];
-    dTdt2 = -(epsilon*C_pg*p_total/R/T_gas) * (Pv[i] - T_dum[i]*PvT[i]) / sink_term[i];
-    
-    dTdt3 = 0.0; 
-    for(size_t j = 0; j < Ncomp; ++j)
+    dTdt1 = K_z / v_in / L * d2Tdx2[i] / sink_term[i];
+    dTdt2 = -(epsilon * C_pg * p_total / R / T_gas) * (Pv[i] - T_dum[i] * PvT[i]) / sink_term[i];
+
+    dTdt3 = 0.0;
+    for (size_t j = 0; j < Ncomp; ++j)
     {
-      dTdt3 += -(1-epsilon) * rho_p * Q_s0 * dqdt[i * Ncomp + j] * del_H[j] / T_gas / sink_term[i];
+      dTdt3 += -(1 - epsilon) * rho_p * Q_s0 * dqdt[i * Ncomp + j] * del_H[j] / T_gas / sink_term[i];
     }
-    
+
     // dTdt[i] = 0.0 * (dTdt1 + dTdt2 + dTdt3);
     dTdt[i] = (dTdt1 + dTdt2 + dTdt3);
 
     // %%%%%%%%%%%%%%%%%%%%%%%%% Total Pressure  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
     dPdt1 = -T_dum[i] * PvT[i];
     dPdt2 = P_dum[i] * dTdt[i] / T_dum[i];
 
-    dPdt3 = 0.0; 
-    for(size_t j = 0; j < Ncomp; ++j)
+    dPdt3 = 0.0;
+    for (size_t j = 0; j < Ncomp; ++j)
     {
       dPdt3 += -phi * T_dum[i] * dqdt[i * Ncomp + j];
     }
 
     dpdt[i] = dPdt1 + dPdt2 + dPdt3;
-    
+
     // %%%%%%%%%%%%%%%%%%%%%%%%%% Mole balance %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     // For all components except carrier gas
     dyPVT = 0.0;
-    for(size_t j = 1; j < Ncomp; ++j)
+    for (size_t j = 1; j < Ncomp; ++j)
     {
-      dyPVT = ((yh[i * Ncomp + j]*Ph[i]*v[i]/Th[i]) 
-              - (yh[(i-1) * Ncomp + j]*Ph[i-1]*v[i-1]/Th[i-1])) * idx;
+      dyPVT =
+          ((yh[i * Ncomp + j] * Ph[i] * v[i] / Th[i]) - (yh[(i - 1) * Ncomp + j] * Ph[i - 1] * v[i - 1] / Th[i - 1])) *
+          idx;
 
-      dydt1 = - (T_dum[i]/P_dum[i]) * (dyPVT - y_dum[i * Ncomp + j]*PvT[i]);
-      
-      dydt2 = (components[j].D/L/v_in) * (d2ydx2[i * Ncomp + j] 
-                                + (dPdx[i]*dydx[i * Ncomp + j])/P_dum[i] 
-                                - (dTdx[i]*dydx[i * Ncomp + j])/T_dum[i]);
+      dydt1 = -(T_dum[i] / P_dum[i]) * (dyPVT - y_dum[i * Ncomp + j] * PvT[i]);
+
+      dydt2 = (components[j].D / L / v_in) * (d2ydx2[i * Ncomp + j] + (dPdx[i] * dydx[i * Ncomp + j]) / P_dum[i] -
+                                              (dTdx[i] * dydx[i * Ncomp + j]) / T_dum[i]);
       res_dqdt = 0.0;
-      for(size_t k = 0; k < Ncomp; ++k)
+      for (size_t k = 0; k < Ncomp; ++k)
       {
         if (k != j)
         {
@@ -914,20 +917,19 @@ void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt,
         }
       }
 
-      dydt3 = phi * T_dum[i] / P_dum[i]
-              * ((y_dum[i * Ncomp + j] - 1.0)*dqdt[i * Ncomp + j]
-              + y_dum[i * Ncomp + j] * res_dqdt);
-      
+      dydt3 = phi * T_dum[i] / P_dum[i] *
+              ((y_dum[i * Ncomp + j] - 1.0) * dqdt[i * Ncomp + j] + y_dum[i * Ncomp + j] * res_dqdt);
+
       dydt[i * Ncomp + j] = dydt1 + dydt2 + dydt3;
     }
   }
 }
 
 // Function to calculate UDS based values at node walls
-std::vector <double> Breakthrough::compute_UDS(std::vector <double> &my_vec, bool is_pressure)
+std::vector<double> Breakthrough::compute_UDS(std::vector<double> &my_vec, bool is_pressure)
 {
-  // Vector to store computed values at the wall, the size of the vector is (Ngrid+1), including inlet and outlet. 
-  std::vector <double> my_vec_out(Ngrid+1, 0.0);
+  // Vector to store computed values at the wall, the size of the vector is (Ngrid+1), including inlet and outlet.
+  std::vector<double> my_vec_out(Ngrid + 1, 0.0);
 
   if (!my_vec.empty())
   {
@@ -951,9 +953,9 @@ std::vector <double> Breakthrough::compute_UDS(std::vector <double> &my_vec, boo
       my_vec_out[Ngrid] = my_vec[Ngrid];
     }
   }
-  
+
   // For right walls of 2nd to Ngrid-1 node
-  for(size_t i=1; i<Ngrid; ++i)
+  for (size_t i = 1; i < Ngrid; ++i)
   {
     my_vec_out[i] = my_vec[i];
   }
@@ -962,16 +964,16 @@ std::vector <double> Breakthrough::compute_UDS(std::vector <double> &my_vec, boo
 }
 
 // Function to calculate WENO based values at node walls
-std::vector <double> Breakthrough::compute_WENO(std::vector <double> &my_vec, bool is_pressure)
+std::vector<double> Breakthrough::compute_WENO(std::vector<double> &my_vec, bool is_pressure)
 {
-  double tol = 1e-10;           // Tolerance value in WENO scheme
+  double tol = 1e-10;  // Tolerance value in WENO scheme
   double alpha_0 = 0.0;
   double alpha_1 = 0.0;
   double first_term = 0.0;
   double second_term = 0.0;
 
-  // Vector to store computed values at the wall, the size of the vector is (Ngrid+1), including inlet and outlet. 
-  std::vector <double> my_vec_out(Ngrid+1, 0.0);
+  // Vector to store computed values at the wall, the size of the vector is (Ngrid+1), including inlet and outlet.
+  std::vector<double> my_vec_out(Ngrid + 1, 0.0);
 
   if (!my_vec.empty())
   {
@@ -995,24 +997,23 @@ std::vector <double> Breakthrough::compute_WENO(std::vector <double> &my_vec, bo
       my_vec_out[Ngrid] = my_vec[Ngrid];
     }
   }
-  
-  // For right wall of 1st Node, alpha_1 and second term values are calculated using half-cell approximation
-  alpha_0 = (2.0/3.0) / std::pow((my_vec[2] - my_vec[1] + tol), 4.0);
-  alpha_1 = (1.0/3.0) / std::pow((2.0*(my_vec[1] - my_vec[0]) + tol), 4.0);
 
-  first_term = (alpha_0 / (alpha_0 + alpha_1))  * ((1.0/2.0) * (my_vec[1] + my_vec[2]));
+  // For right wall of 1st Node, alpha_1 and second term values are calculated using half-cell approximation
+  alpha_0 = (2.0 / 3.0) / std::pow((my_vec[2] - my_vec[1] + tol), 4.0);
+  alpha_1 = (1.0 / 3.0) / std::pow((2.0 * (my_vec[1] - my_vec[0]) + tol), 4.0);
+
+  first_term = (alpha_0 / (alpha_0 + alpha_1)) * ((1.0 / 2.0) * (my_vec[1] + my_vec[2]));
   second_term = (alpha_1 / (alpha_0 + alpha_1)) * (2.0 * my_vec[1] - my_vec[0]);
   my_vec_out[1] = first_term + second_term;
 
   // For right walls of 2nd to Ngrid-1 node
-  for(size_t i=2; i<Ngrid; ++i)
+  for (size_t i = 2; i < Ngrid; ++i)
   {
-    alpha_0 = (2.0/3.0) / std::pow((my_vec[i+1] - my_vec[i] + tol), 4.0);
-    alpha_1 = (1.0/3.0) / std::pow((my_vec[i] - my_vec[i-1] + tol), 4.0);
+    alpha_0 = (2.0 / 3.0) / std::pow((my_vec[i + 1] - my_vec[i] + tol), 4.0);
+    alpha_1 = (1.0 / 3.0) / std::pow((my_vec[i] - my_vec[i - 1] + tol), 4.0);
 
-    first_term = (alpha_0 / (alpha_0 + alpha_1))  * ((1.0/2.0) * (my_vec[i] + my_vec[i+1]));
-    second_term = (alpha_1 / (alpha_0 + alpha_1))  
-                  * ((3.0/2.0) * my_vec[i] - (1.0/2.0) * my_vec[i-1]);
+    first_term = (alpha_0 / (alpha_0 + alpha_1)) * ((1.0 / 2.0) * (my_vec[i] + my_vec[i + 1]));
+    second_term = (alpha_1 / (alpha_0 + alpha_1)) * ((3.0 / 2.0) * my_vec[i] - (1.0 / 2.0) * my_vec[i - 1]);
     my_vec_out[i] = first_term + second_term;
   }
 
@@ -1020,14 +1021,14 @@ std::vector <double> Breakthrough::compute_WENO(std::vector <double> &my_vec, bo
 }
 
 // Function to calculate TVD Van Leer based values at node walls
-std::vector <double> Breakthrough::compute_TVD(std::vector <double> &my_vec, bool is_pressure)
+std::vector<double> Breakthrough::compute_TVD(std::vector<double> &my_vec, bool is_pressure)
 {
-  double tol = 1e-10;           // Tolerance value in TVD scheme
+  double tol = 1e-10;  // Tolerance value in TVD scheme
   double r_value = 0.0;
   double flux_limiter = 0.0;
 
-  // Vector to store computed values at the wall, the size of the vector is (Ngrid+1), including inlet and outlet. 
-  std::vector <double> my_vec_out(Ngrid+1, 0.0);
+  // Vector to store computed values at the wall, the size of the vector is (Ngrid+1), including inlet and outlet.
+  std::vector<double> my_vec_out(Ngrid + 1, 0.0);
 
   if (!my_vec.empty())
   {
@@ -1051,19 +1052,19 @@ std::vector <double> Breakthrough::compute_TVD(std::vector <double> &my_vec, boo
       my_vec_out[Ngrid] = my_vec[Ngrid];
     }
   }
-  
+
   // For right wall of 1st Node, r_value is calculated using half-cell approximation
-  r_value = (2.0*(my_vec[1] - my_vec[0]) + tol) / ((my_vec[2] - my_vec[1]) + tol);
+  r_value = (2.0 * (my_vec[1] - my_vec[0]) + tol) / ((my_vec[2] - my_vec[1]) + tol);
   flux_limiter = (r_value + std::abs(r_value)) / (1.0 + std::abs(r_value));
 
   my_vec_out[1] = my_vec[1] + 0.5 * flux_limiter * (my_vec[2] - my_vec[1]);
 
   // For right walls of 2nd to Ngrid-1 node
-  for(size_t i=2; i<Ngrid; ++i)
+  for (size_t i = 2; i < Ngrid; ++i)
   {
-    r_value = ((my_vec[i] - my_vec[i-1]) + tol) / ((my_vec[i+1] - my_vec[i]) + tol);
+    r_value = ((my_vec[i] - my_vec[i - 1]) + tol) / ((my_vec[i + 1] - my_vec[i]) + tol);
     flux_limiter = (r_value + std::abs(r_value)) / (1.0 + std::abs(r_value));
-    my_vec_out[i] = my_vec[i] + 0.5 * flux_limiter * (my_vec[i+1] - my_vec[i]);
+    my_vec_out[i] = my_vec[i] + 0.5 * flux_limiter * (my_vec[i + 1] - my_vec[i]);
   }
 
   return my_vec_out;
@@ -1101,7 +1102,7 @@ std::string Breakthrough::repr() const
   s += "Component data\n";
   s += "=======================================================\n";
   s += "maximum isotherm terms:        " + std::to_string(maxIsothermTerms) + "\n";
-  for(size_t i = 0; i < Ncomp; ++i)
+  for (size_t i = 0; i < Ncomp; ++i)
   {
     s += components[i].repr() + "\n";
   }
@@ -1110,40 +1111,45 @@ std::string Breakthrough::repr() const
 
 void Breakthrough::createPlotScript()
 {
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    std::ofstream stream_graphs("make_graphs.bat");
-    stream_graphs << "set PATH=%PATH%;C:\\Program Files\\gnuplot\\bin;C:\\Program Files\\ffmpeg-master-latest-win64-gpl\\bin;C:\\Program Files\\ffmpeg\\bin\n";
-    stream_graphs << "gnuplot.exe plot_breakthrough\n";
-  #else
-    std::ofstream stream_graphs("make_graphs");
-    stream_graphs << "#!/bin/sh\n";
-    stream_graphs << "export LC_ALL='en_US.UTF-8'\n";
-    stream_graphs << "cd -- \"$(dirname \"$0\")\"\n";
-    stream_graphs << "gnuplot plot_breakthrough\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  std::ofstream stream_graphs("make_graphs.bat");
+  stream_graphs << "set PATH=%PATH%;C:\\Program Files\\gnuplot\\bin;C:\\Program "
+                   "Files\\ffmpeg-master-latest-win64-gpl\\bin;C:\\Program Files\\ffmpeg\\bin\n";
+  stream_graphs << "gnuplot.exe plot_breakthrough\n";
+#else
+  std::ofstream stream_graphs("make_graphs");
+  stream_graphs << "#!/bin/sh\n";
+  stream_graphs << "export LC_ALL='en_US.UTF-8'\n";
+  stream_graphs << "cd -- \"$(dirname \"$0\")\"\n";
+  stream_graphs << "gnuplot plot_breakthrough\n";
+#endif
 
-  #if (__cplusplus >= 201703L)
-    std::filesystem::path path{"make_graphs"};
-    std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-  #else 
-    chmod("make_graphs", S_IRWXU);
-  #endif
+#if (__cplusplus >= 201703L)
+  std::filesystem::path path{"make_graphs"};
+  std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+#else
+  chmod("make_graphs", S_IRWXU);
+#endif
 
   std::ofstream stream("plot_breakthrough");
   stream << "set encoding utf8\n";
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    stream << "set xlabel 'Dimensionless time, {/Arial-Italic τ}={/Arial-Italic tv/L} / [-]' font \"Arial,14\"\n";
-    stream << "set ylabel 'Concentration exit gas, {/Arial-Italic c}_i/{/Arial-Italic c}_{i,0} / [-]' offset 0.0,0 font \"Arial,14\"\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
-  #else
-    stream << "set xlabel 'Dimensionless time, {/Helvetica-Italic τ}={/Helvetica-Italic tv/L} / [-]' font \"Helvetica,18\"\n";
-    stream << "set ylabel 'Concentration exit gas, {/Helvetica-Italic c}_i/{/Helvetica-Italic c}_{i,0} / [-]' offset 0.0,0 font \"Helvetica,18\"\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  stream << "set xlabel 'Dimensionless time, {/Arial-Italic τ}={/Arial-Italic tv/L} / [-]' font \"Arial,14\"\n";
+  stream << "set ylabel 'Concentration exit gas, {/Arial-Italic c}_i/{/Arial-Italic c}_{i,0} / [-]' offset 0.0,0 font "
+            "\"Arial,14\"\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
+#else
+  stream << "set xlabel 'Dimensionless time, {/Helvetica-Italic τ}={/Helvetica-Italic tv/L} / [-]' font "
+            "\"Helvetica,18\"\n";
+  stream << "set ylabel 'Concentration exit gas, {/Helvetica-Italic c}_i/{/Helvetica-Italic c}_{i,0} / [-]' offset "
+            "0.0,0 font \"Helvetica,18\"\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
+#endif
   stream << "set bmargin 4\n";
   stream << "set yrange[0:]\n";
 
-  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total*1e-3 << " kPa'\n";
+  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total * 1e-3
+         << " kPa'\n";
 
   stream << "set output 'breakthrough_dimensionless.pdf'\n";
   stream << "set term pdf color solid\n";
@@ -1167,58 +1173,58 @@ void Breakthrough::createPlotScript()
   for (size_t i = 0; i < Ncomp; i++)
   {
     std::string fileName = "component_" + std::to_string(i) + "_" + components[i].name + ".data";
-    stream << "    " << "\"" << fileName << "\"" << " us ($1):($3) every ev" << " title \""
-           << components[i].name << " (y_i=" << components[i].Yi0 << ")\""
-           << " with li lt " << i+1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
+    stream << "    " << "\"" << fileName << "\"" << " us ($1):($3) every ev" << " title \"" << components[i].name
+           << " (y_i=" << components[i].Yi0 << ")\""
+           << " with li lt " << i + 1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
   }
   stream << "set output 'breakthrough.pdf'\n";
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-     stream << "set xlabel 'Time, {/Arial-Italic t} / [min.]' font \"Arial,14\"\n";
-  #else
-     stream << "set xlabel 'Time, {/Helvetica-Italic t} / [min.]' font \"Helvetica,18\"\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  stream << "set xlabel 'Time, {/Arial-Italic t} / [min.]' font \"Arial,14\"\n";
+#else
+  stream << "set xlabel 'Time, {/Helvetica-Italic t} / [min.]' font \"Helvetica,18\"\n";
+#endif
   stream << "plot \\\n";
   for (size_t i = 0; i < Ncomp; i++)
   {
     std::string fileName = "component_" + std::to_string(i) + "_" + components[i].name + ".data";
-    stream << "    " << "\"" << fileName << "\"" << " us ($2):($3) every ev" << " title \""
-           << components[i].name << " (y_i=" << components[i].Yi0 << ")\""
-           << " with li lt " << i+1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
+    stream << "    " << "\"" << fileName << "\"" << " us ($2):($3) every ev" << " title \"" << components[i].name
+           << " (y_i=" << components[i].Yi0 << ")\""
+           << " with li lt " << i + 1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
   }
 }
 
 void Breakthrough::createMovieScripts()
 {
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    std::ofstream makeMovieStream("make_movies.bat");
-    makeMovieStream << "CALL make_movie_V.bat %1 %2 %3 %4\n";
-    makeMovieStream << "CALL make_movie_Pt.bat %1 %2 %3 %4\n";
-    makeMovieStream << "CALL make_movie_Q.bat %1 %2 %3 %4\n";
-    makeMovieStream << "CALL make_movie_Qeq.bat %1 %2 %3 %4\n";
-    makeMovieStream << "CALL make_movie_P.bat %1 %2 %3 %4\n";
-    makeMovieStream << "CALL make_movie_Pnorm.bat %1 %2 %3 %4\n";
-    makeMovieStream << "CALL make_movie_Dpdt.bat %1 %2 %3 %4\n";
-    makeMovieStream << "CALL make_movie_Dqdt.bat %1 %2 %3 %4\n";
-  #else
-    std::ofstream makeMovieStream("make_movies");
-    makeMovieStream << "#!/bin/sh\n";
-    makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
-    makeMovieStream << "./make_movie_V \"$@\"\n";
-    makeMovieStream << "./make_movie_Pt \"$@\"\n";
-    makeMovieStream << "./make_movie_Q \"$@\"\n";
-    makeMovieStream << "./make_movie_Qeq \"$@\"\n";
-    makeMovieStream << "./make_movie_P \"$@\"\n";
-    makeMovieStream << "./make_movie_Pnorm \"$@\"\n";
-    makeMovieStream << "./make_movie_Dpdt \"$@\"\n";
-    makeMovieStream << "./make_movie_Dqdt \"$@\"\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  std::ofstream makeMovieStream("make_movies.bat");
+  makeMovieStream << "CALL make_movie_V.bat %1 %2 %3 %4\n";
+  makeMovieStream << "CALL make_movie_Pt.bat %1 %2 %3 %4\n";
+  makeMovieStream << "CALL make_movie_Q.bat %1 %2 %3 %4\n";
+  makeMovieStream << "CALL make_movie_Qeq.bat %1 %2 %3 %4\n";
+  makeMovieStream << "CALL make_movie_P.bat %1 %2 %3 %4\n";
+  makeMovieStream << "CALL make_movie_Pnorm.bat %1 %2 %3 %4\n";
+  makeMovieStream << "CALL make_movie_Dpdt.bat %1 %2 %3 %4\n";
+  makeMovieStream << "CALL make_movie_Dqdt.bat %1 %2 %3 %4\n";
+#else
+  std::ofstream makeMovieStream("make_movies");
+  makeMovieStream << "#!/bin/sh\n";
+  makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
+  makeMovieStream << "./make_movie_V \"$@\"\n";
+  makeMovieStream << "./make_movie_Pt \"$@\"\n";
+  makeMovieStream << "./make_movie_Q \"$@\"\n";
+  makeMovieStream << "./make_movie_Qeq \"$@\"\n";
+  makeMovieStream << "./make_movie_P \"$@\"\n";
+  makeMovieStream << "./make_movie_Pnorm \"$@\"\n";
+  makeMovieStream << "./make_movie_Dpdt \"$@\"\n";
+  makeMovieStream << "./make_movie_Dqdt \"$@\"\n";
+#endif
 
-  #if (__cplusplus >= 201703L)
-    std::filesystem::path path{"make_movies"};
-    std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-  #else 
-    chmod("make_movies", S_IRWXU);
-  #endif
+#if (__cplusplus >= 201703L)
+  std::filesystem::path path{"make_movies"};
+  std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+#else
+  chmod("make_movies", S_IRWXU);
+#endif
 
   createMovieScriptColumnV();
   createMovieScriptColumnPt();
@@ -1230,81 +1236,88 @@ void Breakthrough::createMovieScripts()
   createMovieScriptColumnPnormalized();
 }
 
-// -crf 18: the range of the CRF scale is 0–51, where 0 is lossless, 23 is the default, 
+// -crf 18: the range of the CRF scale is 0–51, where 0 is lossless, 23 is the default,
 //          and 51 is worst quality possible; 18 is visually lossless or nearly so.
 // -pix_fmt yuv420p: needed on apple devices
 std::string movieScriptTemplate(std::string s)
 {
   std::ostringstream stream;
 
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    stream << "del column_movie_" << s << ".mp4\n";
-    stream << "set /A argVec[1]=1\n";
-    stream << "set /A argVec[2]=1200\n";
-    stream << "set /A argVec[3]=800\n";
-    stream << "set /A argVec[4]=18\n";
-    stream << "setlocal enabledelayedexpansion\n";
-    stream << "set argCount=0\n";
-    stream << "for %%x in (%*) do (\n";
-    stream << "   set /A argCount+=1\n";
-    stream << "   set \"argVec[!argCount!]=%%~x\"'n";
-    stream << ")\n";
-    stream << "set PATH=%PATH%;C:\\Program Files\\gnuplot\\bin;C:\\Program Files\\ffmpeg-master-latest-win64-gpl\\bin;C:\\Program Files\\ffmpeg\\bin\n";
-    stream << "gnuplot.exe -c plot_column_" << s << " %argVec[1]% %argVec[2]% %argVec[3]% | ffmpeg.exe -f png_pipe -s:v \"%argVec[2]%,%argVec[3]%\" -i pipe: -c:v libx264 -pix_fmt yuv420p -crf %argVec[4]% -c:a aac column_movie_" << s + ".mp4\n";
-  #else
-    stream << "rm -f " << "column_movie_" << s << ".mp4\n";
-    stream << "every=1\n";
-    stream << "format=\"-c:v libx265 -tag:v hvc1\"\n";
-    stream << "width=1200\n";
-    stream << "height=800\n";
-    stream << "quality=18\n";
-    stream << "while getopts e:w:h:q:l flag\n";
-    stream << "do\n";
-    stream << "    case \"${flag}\" in\n";
-    stream << "        e) every=${OPTARG};;\n";
-    stream << "        w) width=${OPTARG};;\n";
-    stream << "        h) height=${OPTARG};;\n";
-    stream << "        q) quality=${OPTARG};;\n";
-    stream << "        l) format=\"-c:v libx264\";;\n";
-    stream << "    esac\n";
-    stream << "done\n";
-    stream << "gnuplot -c plot_column_" << s << " $every $width $height | ffmpeg -f png_pipe -s:v \"${width},${height}\" -i pipe: $format -pix_fmt yuv420p -crf $quality -c:a aac column_movie_" << s + ".mp4\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  stream << "del column_movie_" << s << ".mp4\n";
+  stream << "set /A argVec[1]=1\n";
+  stream << "set /A argVec[2]=1200\n";
+  stream << "set /A argVec[3]=800\n";
+  stream << "set /A argVec[4]=18\n";
+  stream << "setlocal enabledelayedexpansion\n";
+  stream << "set argCount=0\n";
+  stream << "for %%x in (%*) do (\n";
+  stream << "   set /A argCount+=1\n";
+  stream << "   set \"argVec[!argCount!]=%%~x\"'n";
+  stream << ")\n";
+  stream << "set PATH=%PATH%;C:\\Program Files\\gnuplot\\bin;C:\\Program "
+            "Files\\ffmpeg-master-latest-win64-gpl\\bin;C:\\Program Files\\ffmpeg\\bin\n";
+  stream << "gnuplot.exe -c plot_column_" << s
+         << " %argVec[1]% %argVec[2]% %argVec[3]% | ffmpeg.exe -f png_pipe -s:v \"%argVec[2]%,%argVec[3]%\" -i pipe: "
+            "-c:v libx264 -pix_fmt yuv420p -crf %argVec[4]% -c:a aac column_movie_"
+         << s + ".mp4\n";
+#else
+  stream << "rm -f " << "column_movie_" << s << ".mp4\n";
+  stream << "every=1\n";
+  stream << "format=\"-c:v libx265 -tag:v hvc1\"\n";
+  stream << "width=1200\n";
+  stream << "height=800\n";
+  stream << "quality=18\n";
+  stream << "while getopts e:w:h:q:l flag\n";
+  stream << "do\n";
+  stream << "    case \"${flag}\" in\n";
+  stream << "        e) every=${OPTARG};;\n";
+  stream << "        w) width=${OPTARG};;\n";
+  stream << "        h) height=${OPTARG};;\n";
+  stream << "        q) quality=${OPTARG};;\n";
+  stream << "        l) format=\"-c:v libx264\";;\n";
+  stream << "    esac\n";
+  stream << "done\n";
+  stream << "gnuplot -c plot_column_" << s
+         << " $every $width $height | ffmpeg -f png_pipe -s:v \"${width},${height}\" -i pipe: $format -pix_fmt yuv420p "
+            "-crf $quality -c:a aac column_movie_"
+         << s + ".mp4\n";
+#endif
   return stream.str();
 }
 
 void Breakthrough::createMovieScriptColumnV()
 {
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    std::ofstream makeMovieStream("make_movie_V.bat");
-  #else
-    std::ofstream makeMovieStream("make_movie_V");
-    makeMovieStream << "#!/bin/sh\n";
-    makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  std::ofstream makeMovieStream("make_movie_V.bat");
+#else
+  std::ofstream makeMovieStream("make_movie_V");
+  makeMovieStream << "#!/bin/sh\n";
+  makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
+#endif
   makeMovieStream << movieScriptTemplate("V");
 
-  #if (__cplusplus >= 201703L)
-    std::filesystem::path path{"make_movie_V"};
-    std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-  #else
-    chmod("make_movie_V", S_IRWXU);
-  #endif
+#if (__cplusplus >= 201703L)
+  std::filesystem::path path{"make_movie_V"};
+  std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+#else
+  chmod("make_movie_V", S_IRWXU);
+#endif
 
   std::ofstream stream("plot_column_V");
 
   stream << "set encoding utf8\n";
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
-    stream << "set ylabel 'Interstitial velocity, {/Arial-Italic v} / [m/s]' offset 0.0,0 font 'Arial,14'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
-  #else
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
-    stream << "set ylabel 'Interstitial velocity, {/Helvetica-Italic v} / [m/s]' offset 0.0,0 font 'Helvetica,18'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
+  stream << "set ylabel 'Interstitial velocity, {/Arial-Italic v} / [m/s]' offset 0.0,0 font 'Arial,14'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
+#else
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
+  stream << "set ylabel 'Interstitial velocity, {/Helvetica-Italic v} / [m/s]' offset 0.0,0 font 'Helvetica,18'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
+#endif
 
   // colorscheme from book 'gnuplot in action', listing 12.7
   stream << "set linetype 1 pt 5 ps 1 lw 4 lc rgb '0xee0000'\n";
@@ -1321,7 +1334,8 @@ void Breakthrough::createMovieScriptColumnV()
   stream << "set linetype 12 pt 14 ps 1 lw 4 lc rgb '0x000000'\n";
 
   stream << "set bmargin 4\n";
-  stream << "set title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total*1e-3 << " kPa'\n";
+  stream << "set title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total * 1e-3
+         << " kPa'\n";
   stream << "stats 'column.data' us 2 nooutput\n";
   stream << "max=STATS_max\n";
   stream << "stats 'column.data' us 1 nooutput\n";
@@ -1335,39 +1349,38 @@ void Breakthrough::createMovieScriptColumnV()
   stream << "}\n";
 }
 
-
 void Breakthrough::createMovieScriptColumnPt()
 {
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    std::ofstream makeMovieStream("make_movie_Pt.bat");
-  #else
-    std::ofstream makeMovieStream("make_movie_Pt");
-    makeMovieStream << "#!/bin/sh\n";
-    makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  std::ofstream makeMovieStream("make_movie_Pt.bat");
+#else
+  std::ofstream makeMovieStream("make_movie_Pt");
+  makeMovieStream << "#!/bin/sh\n";
+  makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
+#endif
   makeMovieStream << movieScriptTemplate("Pt");
 
-  #if (__cplusplus >= 201703L)
-    std::filesystem::path path{"make_movie_Pt"};
-    std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-  #else
-    chmod("make_movie_Pt", S_IRWXU);
-  #endif
+#if (__cplusplus >= 201703L)
+  std::filesystem::path path{"make_movie_Pt"};
+  std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+#else
+  chmod("make_movie_Pt", S_IRWXU);
+#endif
 
   std::ofstream stream("plot_column_Pt");
 
   stream << "set encoding utf8\n";
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
-    stream << "set ylabel 'Total Pressure, {/Arial-Italic p_t} / [Pa]' offset 0.0,0 font 'Arial,14'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
-  #else 
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
-    stream << "set ylabel 'Total Pressure, {/Helvetica-Italic p_t} / [Pa]' offset 0.0,0 font 'Helvetica,18'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
+  stream << "set ylabel 'Total Pressure, {/Arial-Italic p_t} / [Pa]' offset 0.0,0 font 'Arial,14'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
+#else
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
+  stream << "set ylabel 'Total Pressure, {/Helvetica-Italic p_t} / [Pa]' offset 0.0,0 font 'Helvetica,18'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
+#endif
 
   // colorscheme from book 'gnuplot in action', listing 12.7
   stream << "set linetype 1 pt 5 ps 1 lw 4 lc rgb '0xee0000'\n";
@@ -1384,7 +1397,8 @@ void Breakthrough::createMovieScriptColumnPt()
   stream << "set linetype 12 pt 14 ps 1 lw 4 lc rgb '0x000000'\n";
 
   stream << "set bmargin 4\n";
-  stream << "set title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total*1e-3 << " kPa'\n";
+  stream << "set title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total * 1e-3
+         << " kPa'\n";
   stream << "stats 'column.data' us 3 nooutput\n";
   stream << "max=STATS_max\n";
   stream << "stats 'column.data' us 1 nooutput\n";
@@ -1400,36 +1414,36 @@ void Breakthrough::createMovieScriptColumnPt()
 
 void Breakthrough::createMovieScriptColumnQ()
 {
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    std::ofstream makeMovieStream("make_movie_Q.bat");
-  #else
-    std::ofstream makeMovieStream("make_movie_Q");
-    makeMovieStream << "#!/bin/sh\n";
-    makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  std::ofstream makeMovieStream("make_movie_Q.bat");
+#else
+  std::ofstream makeMovieStream("make_movie_Q");
+  makeMovieStream << "#!/bin/sh\n";
+  makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
+#endif
   makeMovieStream << movieScriptTemplate("Q");
 
-  #if (__cplusplus >= 201703L)
-    std::filesystem::path path{"make_movie_Q"};
-    std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-  #else
-    chmod("make_movie_Q", S_IRWXU);
-  #endif
+#if (__cplusplus >= 201703L)
+  std::filesystem::path path{"make_movie_Q"};
+  std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+#else
+  chmod("make_movie_Q", S_IRWXU);
+#endif
 
   std::ofstream stream("plot_column_Q");
 
   stream << "set encoding utf8\n";
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
-    stream << "set ylabel 'Concentration, {/Arial-Italic c}_i / [mol/kg]' offset 0.0,0 font 'Arial,14'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
-  #else
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
-    stream << "set ylabel 'Concentration, {/Helvetica-Italic c}_i / [mol/kg]' offset 0.0,0 font 'Helvetica,18'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
+  stream << "set ylabel 'Concentration, {/Arial-Italic c}_i / [mol/kg]' offset 0.0,0 font 'Arial,14'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
+#else
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
+  stream << "set ylabel 'Concentration, {/Helvetica-Italic c}_i / [mol/kg]' offset 0.0,0 font 'Helvetica,18'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
+#endif
 
   // colorscheme from book 'gnuplot in action', listing 12.7
   stream << "set linetype 1 pt 5 ps 1 lw 4 lc rgb '0xee0000'\n";
@@ -1446,7 +1460,8 @@ void Breakthrough::createMovieScriptColumnQ()
   stream << "set linetype 12 pt 14 ps 1 lw 4 lc rgb '0x000000'\n";
 
   stream << "set bmargin 4\n";
-  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total*1e-3 << " kPa'\n";
+  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total * 1e-3
+         << " kPa'\n";
   stream << "stats 'column.data' nooutput\n";
   stream << "max = 0.0;\n";
   stream << "do for [i=4:STATS_columns:6] {\n";
@@ -1463,51 +1478,51 @@ void Breakthrough::createMovieScriptColumnQ()
   stream << "  plot \\\n";
   for (size_t i = 0; i < Ncomp; i++)
   {
-    stream << "    " << "'column.data'" << " us 1:" << std::to_string(4 + i * 6) << " index ev*i notitle " 
-           << " with li lt " << i+1 << ",\\\n";
+    stream << "    " << "'column.data'" << " us 1:" << std::to_string(4 + i * 6) << " index ev*i notitle "
+           << " with li lt " << i + 1 << ",\\\n";
   }
   for (size_t i = 0; i < Ncomp; i++)
   {
     stream << "    " << "'column.data'" << " us 1:" << std::to_string(4 + i * 6) << " index ev*i title '"
            << components[i].name << " (y_i=" << components[i].Yi0 << ")'"
-           << " with po lt " << i+1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
+           << " with po lt " << i + 1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
   }
   stream << "}\n";
 }
 
 void Breakthrough::createMovieScriptColumnQeq()
 {
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    std::ofstream makeMovieStream("make_movie_Qeq.bat");
-  #else
-    std::ofstream makeMovieStream("make_movie_Qeq");
-    makeMovieStream << "#!/bin/sh\n";
-    makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  std::ofstream makeMovieStream("make_movie_Qeq.bat");
+#else
+  std::ofstream makeMovieStream("make_movie_Qeq");
+  makeMovieStream << "#!/bin/sh\n";
+  makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
+#endif
   makeMovieStream << movieScriptTemplate("Qeq");
 
-  #if (__cplusplus >= 201703L)
-    std::filesystem::path path{"make_movie_Qeq"};
-    std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-  #else
-    chmod("make_movie_Qeq", S_IRWXU);
-  #endif
+#if (__cplusplus >= 201703L)
+  std::filesystem::path path{"make_movie_Qeq"};
+  std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+#else
+  chmod("make_movie_Qeq", S_IRWXU);
+#endif
 
   std::ofstream stream("plot_column_Qeq");
 
   stream << "set encoding utf8\n";
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
-    stream << "set ylabel 'Concentration, {/Arial-Italic c}_i / [mol/kg]' offset 0.0,0 font 'Arial,14'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
-  #else
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
-    stream << "set ylabel 'Concentration, {/Helvetica-Italic c}_i / [mol/kg]' offset 0.0,0 font 'Helvetica,18'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
-  #endif
-  
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
+  stream << "set ylabel 'Concentration, {/Arial-Italic c}_i / [mol/kg]' offset 0.0,0 font 'Arial,14'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
+#else
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
+  stream << "set ylabel 'Concentration, {/Helvetica-Italic c}_i / [mol/kg]' offset 0.0,0 font 'Helvetica,18'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
+#endif
+
   // colorscheme from book 'gnuplot in action', listing 12.7
   stream << "set linetype 1 pt 5 ps 1 lw 4 lc rgb '0xee0000'\n";
   stream << "set linetype 2 pt 7 ps 1 lw 4 lc rgb '0x008b00'\n";
@@ -1523,7 +1538,8 @@ void Breakthrough::createMovieScriptColumnQeq()
   stream << "set linetype 12 pt 14 ps 1 lw 4 lc rgb '0x000000'\n";
 
   stream << "set bmargin 4\n";
-  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total*1e-3 << " kPa'\n";
+  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total * 1e-3
+         << " kPa'\n";
   stream << "stats 'column.data' nooutput\n";
   stream << "max = 0.0;\n";
   stream << "do for [i=5:STATS_columns:6] {\n";
@@ -1540,50 +1556,50 @@ void Breakthrough::createMovieScriptColumnQeq()
   stream << "  plot \\\n";
   for (size_t i = 0; i < Ncomp; i++)
   {
-    stream << "    " << "'column.data'" << " us 1:" << std::to_string(5 + i * 6) << " index ev*i notitle " 
-           << " with li lt " << i+1 << ",\\\n";
+    stream << "    " << "'column.data'" << " us 1:" << std::to_string(5 + i * 6) << " index ev*i notitle "
+           << " with li lt " << i + 1 << ",\\\n";
   }
   for (size_t i = 0; i < Ncomp; i++)
   {
     stream << "    " << "'column.data'" << " us 1:" << std::to_string(5 + i * 6) << " index ev*i title '"
            << components[i].name << " (y_i=" << components[i].Yi0 << ")'"
-           << " with po lt " << i+1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
+           << " with po lt " << i + 1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
   }
   stream << "}\n";
 }
 
 void Breakthrough::createMovieScriptColumnP()
 {
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    std::ofstream makeMovieStream("make_movie_P.bat");
-  #else
-    std::ofstream makeMovieStream("make_movie_P");
-    makeMovieStream << "#!/bin/sh\n";
-    makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  std::ofstream makeMovieStream("make_movie_P.bat");
+#else
+  std::ofstream makeMovieStream("make_movie_P");
+  makeMovieStream << "#!/bin/sh\n";
+  makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
+#endif
   makeMovieStream << movieScriptTemplate("P");
 
-  #if (__cplusplus >= 201703L)
-    std::filesystem::path path{"make_movie_P"};
-    std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-  #else
-    chmod("make_movie_P", S_IRWXU);
-  #endif
+#if (__cplusplus >= 201703L)
+  std::filesystem::path path{"make_movie_P"};
+  std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+#else
+  chmod("make_movie_P", S_IRWXU);
+#endif
 
   std::ofstream stream("plot_column_P");
 
   stream << "set encoding utf8\n";
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
-    stream << "set ylabel 'Partial pressure, {/Arial-Italic p}_i / [Pa]' offset 0.0,0 font 'Arial,14'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
-  #else
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
-    stream << "set ylabel 'Partial pressure, {/Helvetica-Italic p}_i / [Pa]' offset 0.0,0 font 'Helvetica,18'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
+  stream << "set ylabel 'Partial pressure, {/Arial-Italic p}_i / [Pa]' offset 0.0,0 font 'Arial,14'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
+#else
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
+  stream << "set ylabel 'Partial pressure, {/Helvetica-Italic p}_i / [Pa]' offset 0.0,0 font 'Helvetica,18'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
+#endif
 
   // colorscheme from book 'gnuplot in action', listing 12.7
   stream << "set linetype 1 pt 5 ps 1 lw 4 lc rgb '0xee0000'\n";
@@ -1600,7 +1616,8 @@ void Breakthrough::createMovieScriptColumnP()
   stream << "set linetype 12 pt 14 ps 1 lw 4 lc rgb '0x000000'\n";
 
   stream << "set bmargin 4\n";
-  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total*1e-3 << " kPa'\n";
+  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total * 1e-3
+         << " kPa'\n";
   stream << "stats 'column.data' nooutput\n";
   stream << "max = 0.0;\n";
   stream << "do for [i=6:STATS_columns:6] {\n";
@@ -1617,50 +1634,50 @@ void Breakthrough::createMovieScriptColumnP()
   stream << "  plot \\\n";
   for (size_t i = 0; i < Ncomp; i++)
   {
-    stream << "    " << "'column.data'" << " us 1:" << std::to_string(6 + i * 6) << " index ev*i notitle " 
-           << " with li lt " << i+1 << ",\\\n";
+    stream << "    " << "'column.data'" << " us 1:" << std::to_string(6 + i * 6) << " index ev*i notitle "
+           << " with li lt " << i + 1 << ",\\\n";
   }
   for (size_t i = 0; i < Ncomp; i++)
   {
     stream << "    " << "'column.data'" << " us 1:" << std::to_string(6 + i * 6) << " index ev*i title '"
            << components[i].name << " (y_i=" << components[i].Yi0 << ")'"
-           << " with po lt " << i+1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
+           << " with po lt " << i + 1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
   }
   stream << "}\n";
 }
 
 void Breakthrough::createMovieScriptColumnPnormalized()
 {
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    std::ofstream makeMovieStream("make_movie_Pnorm.bat");
-  #else
-    std::ofstream makeMovieStream("make_movie_Pnorm");
-    makeMovieStream << "#!/bin/sh\n";
-    makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  std::ofstream makeMovieStream("make_movie_Pnorm.bat");
+#else
+  std::ofstream makeMovieStream("make_movie_Pnorm");
+  makeMovieStream << "#!/bin/sh\n";
+  makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
+#endif
   makeMovieStream << movieScriptTemplate("Pnorm");
 
-  #if (__cplusplus >= 201703L)
-    std::filesystem::path path{"make_movie_Pnorm"};
-    std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-  #else
-    chmod("make_movie_Pnorm", S_IRWXU);
-  #endif
+#if (__cplusplus >= 201703L)
+  std::filesystem::path path{"make_movie_Pnorm"};
+  std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+#else
+  chmod("make_movie_Pnorm", S_IRWXU);
+#endif
 
   std::ofstream stream("plot_column_Pnorm");
 
   stream << "set encoding utf8\n";
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
-    stream << "set ylabel 'Partial pressure, {/Arial-Italic p}_i / [-]' offset 0.0,0 font 'Arial,14'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
-  #else
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
-    stream << "set ylabel 'Partial pressure, {/Helvetica-Italic p}_i / [-]' offset 0.0,0 font 'Helvetica,18'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
+  stream << "set ylabel 'Partial pressure, {/Arial-Italic p}_i / [-]' offset 0.0,0 font 'Arial,14'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
+#else
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
+  stream << "set ylabel 'Partial pressure, {/Helvetica-Italic p}_i / [-]' offset 0.0,0 font 'Helvetica,18'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
+#endif
 
   // colorscheme from book 'gnuplot in action', listing 12.7
   stream << "set linetype 1 pt 5 ps 1 lw 4 lc rgb '0xee0000'\n";
@@ -1677,7 +1694,8 @@ void Breakthrough::createMovieScriptColumnPnormalized()
   stream << "set linetype 12 pt 14 ps 1 lw 4 lc rgb '0x000000'\n";
 
   stream << "set bmargin 4\n";
-  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total*1e-3 << " kPa'\n";
+  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total * 1e-3
+         << " kPa'\n";
   stream << "stats 'column.data' nooutput\n";
   stream << "max = 0.0;\n";
   stream << "do for [i=7:STATS_columns:6] {\n";
@@ -1694,50 +1712,50 @@ void Breakthrough::createMovieScriptColumnPnormalized()
   stream << "  plot \\\n";
   for (size_t i = 0; i < Ncomp; i++)
   {
-    stream << "    " << "'column.data'" << " us 1:" << std::to_string(7 + i * 6) << " index ev*i notitle " 
-           << " with li lt " << i+1 << ",\\\n";
+    stream << "    " << "'column.data'" << " us 1:" << std::to_string(7 + i * 6) << " index ev*i notitle "
+           << " with li lt " << i + 1 << ",\\\n";
   }
   for (size_t i = 0; i < Ncomp; i++)
   {
     stream << "    " << "'column.data'" << " us 1:" << std::to_string(7 + i * 6) << " index ev*i title '"
            << components[i].name << " (y_i=" << components[i].Yi0 << ")'"
-           << " with po lt " << i+1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
+           << " with po lt " << i + 1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
   }
   stream << "}\n";
 }
 
 void Breakthrough::createMovieScriptColumnDpdt()
 {
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    std::ofstream makeMovieStream("make_movie_Dpdt.bat");
-  #else
-    std::ofstream makeMovieStream("make_movie_Dpdt");
-    makeMovieStream << "#!/bin/sh\n";
-    makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  std::ofstream makeMovieStream("make_movie_Dpdt.bat");
+#else
+  std::ofstream makeMovieStream("make_movie_Dpdt");
+  makeMovieStream << "#!/bin/sh\n";
+  makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
+#endif
   makeMovieStream << movieScriptTemplate("Dpdt");
 
-  #if (__cplusplus >= 201703L)
-    std::filesystem::path path{"make_movie_Dpdt"};
-    std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-  #else
-    chmod("make_movie_Dpdt", S_IRWXU);
-  #endif
+#if (__cplusplus >= 201703L)
+  std::filesystem::path path{"make_movie_Dpdt"};
+  std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+#else
+  chmod("make_movie_Dpdt", S_IRWXU);
+#endif
 
   std::ofstream stream("plot_column_Dpdt");
 
   stream << "set encoding utf8\n";
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
-    stream << "set ylabel 'Pressure derivative, {/Arial-Italic dp_/dt} / [Pa/s]' offset 0.0,0 font 'Arial,14'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
-  #else
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
-    stream << "set ylabel 'Pressure derivative, {/Helvetica-Italic dp_/dt} / [Pa/s]' offset 0.0,0 font 'Helvetica,18'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
+  stream << "set ylabel 'Pressure derivative, {/Arial-Italic dp_/dt} / [Pa/s]' offset 0.0,0 font 'Arial,14'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
+#else
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
+  stream << "set ylabel 'Pressure derivative, {/Helvetica-Italic dp_/dt} / [Pa/s]' offset 0.0,0 font 'Helvetica,18'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
+#endif
 
   // colorscheme from book 'gnuplot in action', listing 12.7
   stream << "set linetype 1 pt 5 ps 1 lw 4 lc rgb '0xee0000'\n";
@@ -1754,7 +1772,8 @@ void Breakthrough::createMovieScriptColumnDpdt()
   stream << "set linetype 12 pt 14 ps 1 lw 4 lc rgb '0x000000'\n";
 
   stream << "set bmargin 4\n";
-  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total*1e-3 << " kPa'\n";
+  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total * 1e-3
+         << " kPa'\n";
   stream << "stats 'column.data' nooutput\n";
   stream << "max = -1e10;\n";
   stream << "min = 1e10;\n";
@@ -1775,50 +1794,51 @@ void Breakthrough::createMovieScriptColumnDpdt()
   stream << "  plot \\\n";
   for (size_t i = 0; i < Ncomp; i++)
   {
-    stream << "    " << "'column.data'" << " us 1:" << std::to_string(8 + i * 6) << " index ev*i notitle " 
-           << " with li lt " << i+1 << ",\\\n";
+    stream << "    " << "'column.data'" << " us 1:" << std::to_string(8 + i * 6) << " index ev*i notitle "
+           << " with li lt " << i + 1 << ",\\\n";
   }
   for (size_t i = 0; i < Ncomp; i++)
   {
     stream << "    " << "'column.data'" << " us 1:" << std::to_string(8 + i * 6) << " index ev*i title '"
            << components[i].name << " (y_i=" << components[i].Yi0 << ")'"
-           << " with po lt " << i+1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
+           << " with po lt " << i + 1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
   }
   stream << "}\n";
 }
 
 void Breakthrough::createMovieScriptColumnDqdt()
 {
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    std::ofstream makeMovieStream("make_movie_Dqdt.bat");
-  #else
-    std::ofstream makeMovieStream("make_movie_Dqdt");
-    makeMovieStream << "#!/bin/sh\n";
-    makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  std::ofstream makeMovieStream("make_movie_Dqdt.bat");
+#else
+  std::ofstream makeMovieStream("make_movie_Dqdt");
+  makeMovieStream << "#!/bin/sh\n";
+  makeMovieStream << "cd -- \"$(dirname \"$0\")\"\n";
+#endif
   makeMovieStream << movieScriptTemplate("Dqdt");
 
-  #if (__cplusplus >= 201703L)
-    std::filesystem::path path{"make_movie_Dqdt"};
-    std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-  #else
-    chmod("make_movie_Dqdt", S_IRWXU);
-  #endif
+#if (__cplusplus >= 201703L)
+  std::filesystem::path path{"make_movie_Dqdt"};
+  std::filesystem::permissions(path, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+#else
+  chmod("make_movie_Dqdt", S_IRWXU);
+#endif
 
   std::ofstream stream("plot_column_Dqdt");
 
   stream << "set encoding utf8\n";
-  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
-    stream << "set ylabel 'Loading derivative, {/Arial-Italic dq_i/dt} / [mol/kg/s]' offset 0.0,0 font 'Arial,14'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
-  #else
-    stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
-    stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
-    stream << "set ylabel 'Loading derivative, {/Helvetica-Italic dq_i/dt} / [mol/kg/s]' offset 0.0,0 font 'Helvetica,18'\n";
-    stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
-  #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Arial,14'\n";
+  stream << "set ylabel 'Loading derivative, {/Arial-Italic dq_i/dt} / [mol/kg/s]' offset 0.0,0 font 'Arial,14'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'\n";
+#else
+  stream << "set terminal pngcairo size ARG2,ARG3 enhanced font 'Helvetica,10'\n";
+  stream << "set xlabel 'Adsorber position / [m]' font 'Helvetica,18'\n";
+  stream
+      << "set ylabel 'Loading derivative, {/Helvetica-Italic dq_i/dt} / [mol/kg/s]' offset 0.0,0 font 'Helvetica,18'\n";
+  stream << "set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Helvetica, 10'\n";
+#endif
 
   // colorscheme from book 'gnuplot in action', listing 12.7
   stream << "set linetype 1 pt 5 ps 1 lw 4 lc rgb '0xee0000'\n";
@@ -1835,7 +1855,8 @@ void Breakthrough::createMovieScriptColumnDqdt()
   stream << "set linetype 12 pt 14 ps 1 lw 4 lc rgb '0x000000'\n";
 
   stream << "set bmargin 4\n";
-  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total*1e-3 << " kPa'\n";
+  stream << "set key title '" << displayName << " {/:Italic T}=" << T_gas << " K, {/:Italic p_t}=" << p_total * 1e-3
+         << " kPa'\n";
   stream << "stats 'column.data' nooutput\n";
   stream << "max = -1e10;\n";
   stream << "min = 1e10;\n";
@@ -1857,14 +1878,14 @@ void Breakthrough::createMovieScriptColumnDqdt()
   stream << "  plot \\\n";
   for (size_t i = 0; i < Ncomp; i++)
   {
-    stream << "    " << "'column.data'" << " us 1:" << std::to_string(9 + i * 6) << " index ev*i notitle " 
-           << " with li lt " << i+1 << ",\\\n";
+    stream << "    " << "'column.data'" << " us 1:" << std::to_string(9 + i * 6) << " index ev*i notitle "
+           << " with li lt " << i + 1 << ",\\\n";
   }
   for (size_t i = 0; i < Ncomp; i++)
   {
     stream << "    " << "'column.data'" << " us 1:" << std::to_string(9 + i * 6) << " index ev*i title '"
            << components[i].name << " (y_i=" << components[i].Yi0 << ")'"
-           << " with po lt " << i+1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
+           << " with po lt " << i + 1 << (i < Ncomp - 1 ? ",\\" : "") << "\n";
   }
   stream << "}\n";
 }
