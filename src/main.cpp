@@ -18,6 +18,7 @@ int main(void)
       default:
       {
         Breakthrough breakthrough(reader);
+        
 
         breakthrough.print();
         breakthrough.initialize();

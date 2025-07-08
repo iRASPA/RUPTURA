@@ -101,6 +101,8 @@ Breakthrough::Breakthrough(const InputReader &inputReader)
       cachedP0((Ngrid + 1) * Ncomp * maxIsothermTerms),
       cachedPsi((Ngrid + 1) * maxIsothermTerms) 
 {
+
+  std::cout << "IN CONSTRUCTOR!" << std::endl;
   indexLeft = 0;
   indexMid = 0;
   indexRight = 0;
@@ -114,7 +116,7 @@ Breakthrough::Breakthrough(const InputReader &inputReader)
        break;
     }
 
-    if (boundaryCoordinate - static_cast<double>(i) * dx == 0)  {
+    if ((boundaryCoordinate - static_cast<double>(i) * dx == 0) && (boundaryCoordinate != L))  {
        indexLeft = i - 1;
        indexMid = i;
        indexRight = i + 1;
@@ -124,7 +126,7 @@ Breakthrough::Breakthrough(const InputReader &inputReader)
     
   }
 
-  if ( indexLeft == 0 ) {
+  if ( indexLeft == 0 && indexRight == 0) {
     relLeft = 1;
     relRight = 0;
   }
@@ -135,6 +137,9 @@ Breakthrough::Breakthrough(const InputReader &inputReader)
     relLeft = dxLeft / dx;
     relRight = dxRight / dx;
   }
+
+  std::cout << "index left: " << indexLeft << std::endl;
+  std::cout << "index right: " << indexRight << std::endl;
 
 
   //std::cout << indexLeft << " " << indexRight << " " << indexMid << std::endl;
@@ -194,6 +199,8 @@ Breakthrough::Breakthrough(std::string _displayName, std::vector<Component> _com
       cachedP0((Ngrid + 1) * Ncomp * maxIsothermTerms),
       cachedPsi((Ngrid + 1) * maxIsothermTerms)
 {
+
+  std::cout << "IN CONSTURCOTR!" << std::endl;
   indexLeft = 0;
   indexMid = 0;
   indexRight = 0;
@@ -213,6 +220,18 @@ Breakthrough::Breakthrough(std::string _displayName, std::vector<Component> _com
        indexRight = i + 1;
        break;
     }
+
+    
+  }
+
+  std::cout << L << std::endl;
+  std::cout << boundaryCoordinate << std::endl;
+
+  if (boundaryCoordinate == L) {
+    std::cout << "NO BOUNDARY!!" << std::endl;
+    indexLeft = 0;
+    indexMid = 0;
+    indexRight = 0;
   }
 
   if ( indexLeft == 0 ) {
@@ -667,6 +686,8 @@ void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt, std::vecto
 
   // first gridpoint
   if ( indexLeft == 0 ) {
+    //std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!first grid point!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    //std::cout << indexLeft << std::endl;
     for (size_t j = 0; j < Ncomp; ++j)
     {
       dqdt[0 * Ncomp + j] = components[j].Kl1 * (q_eq[0 * Ncomp + j] - q[0 * Ncomp + j]);
@@ -687,6 +708,8 @@ void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt, std::vecto
   for (size_t i = 1; i < Ngrid; i++)
   {
     if ( i < indexLeft ) {      // When grid point < iL
+      std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!INDEX LEFT I < IL !!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+      std::cout << indexLeft<< std::endl; 
       for (size_t j = 0; j < Ncomp; ++j)
     {
       dqdt[i * Ncomp + j] = components[j].Kl * (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
@@ -697,6 +720,8 @@ void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt, std::vecto
     }
   }
     if ( i == indexLeft) {  // When grid point in iL
+      std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!INDEX LEFT=!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+      std::cout << indexLeft << std::endl; 
       for (size_t j = 0; j < Ncomp; ++j)
     {
       dqdt[i * Ncomp + j] = (components[j].Kl * relLeft + components[j].Kl1 * relRight)* (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
@@ -708,6 +733,8 @@ void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt, std::vecto
   }
 
   if ( i == indexRight ) {         // When grid point in iR
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!INDEX RIGHT=!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << indexRight << std::endl; 
       for (size_t j = 0; j < Ncomp; ++j)
     {
       dqdt[i * Ncomp + j] = (components[j].Kl * relRight + components[j].Kl1 * relLeft)* (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
@@ -718,7 +745,9 @@ void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt, std::vecto
     }
   }
 
-    if ( i > indexRight ) {      // When grid point > iR
+    if ( i > indexRight ) {
+      //std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!INDEX RIGHT!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+      //std::cout << indexRight << std::endl;      // When grid point > iR
       for (size_t j = 0; j < Ncomp; ++j)
     {
       dqdt[i * Ncomp + j] = components[j].Kl1 * (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
@@ -756,7 +785,8 @@ void Breakthrough::computeVelocity()
   {
     // sum = derivative at the actual gridpoint i
     if (i < indexLeft) {
-    
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!INDEX LEFT DER!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << indexLeft << std::endl;
     double sum = 0.0;
     for (size_t j = 0; j < Ncomp; ++j)
     {
@@ -770,6 +800,8 @@ void Breakthrough::computeVelocity()
   }
 
   if (i == indexLeft) {
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!INDEX LEFT DER=!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << indexLeft << std::endl;
     double sum = 0.0;
     for (size_t j = 0; j < Ncomp; ++j)
     {
@@ -783,6 +815,8 @@ void Breakthrough::computeVelocity()
   }
 
   if (i == indexRight) {
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!INDEX RIGHT DER=!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << indexRight << std::endl;
     double sum = 0.0;
     for (size_t j = 0; j < Ncomp; ++j)
     {
@@ -796,6 +830,8 @@ void Breakthrough::computeVelocity()
   }
 
   if (i > indexRight) {
+    //std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!INDEX RIGHT DER!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    //std::cout << indexRight << std::endl;
     double sum = 0.0;
     for (size_t j = 0; j < Ncomp; ++j)
     {
@@ -833,6 +869,7 @@ std::string Breakthrough::repr() const
   s += "Temperature:                           " + std::to_string(T) + " [K]\n";
   s += "RelRight:                              " + std::to_string(relRight) + " [K]\n";
   s += "RelLeft:                               " + std::to_string(relLeft) + " [K]\n";
+  s += "NCOMP:                               " + std::to_string(Ncomp) + " [K]\n";
   s += "Column length:                         " + std::to_string(L) + " [m]\n";
   s += "Column void-fraction:                  " + std::to_string(epsilon) + " [-]\n";
   s += "Particle density:                      " + std::to_string(rho_p) + " [kg/m^3]\n";

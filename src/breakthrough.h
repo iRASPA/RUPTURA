@@ -150,9 +150,9 @@ struct Breakthrough
   double rho_p;    ///< Particle density [kg/m³].
   double rho_p1;    ///< Particle density [kg/m³].
   double boundaryCoordinate;  ///< boundary x coord
-  size_t indexLeft;
-  size_t indexRight;
-  size_t indexMid;
+  size_t indexLeft{0};
+  size_t indexRight{0};
+  size_t indexMid{0};
   double dxLeft, dxRight, relLeft, relRight;
   double v_in;     ///< Interstitial velocity at the beginning of the column [m/s].
 
