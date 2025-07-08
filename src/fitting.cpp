@@ -583,15 +583,17 @@ void Fitting::writeCitizen(size_t citizen, size_t id, size_t step, size_t variet
   char info[256];
   if (fullfilledCondition > 0)
   {
-    snprintf(info, 256,
-             "mol: %2ld  step: %5ld  Fitness: %10.6lf R^2: %10.6lf Similarity: %5ld/%-5ld Finishing: %3ld/%-3d\n", id,
-             step, parents[citizen].fitness, pow(RCorrelation(parents[citizen].phenotype), 2), variety, GA_Size,
-             fullfilledCondition, 100);
+    snprintf(info, 256, "mol: %2zu  step: %5zu  Fitness: %10.6lf R^2: %10.6lf Similarity: %5zu/%-5zu Finishing: %3zu/%-3d\n",
+    id, step, parents[citizen].fitness, pow(RCorrelation(parents[citizen].phenotype), 2),
+    variety, GA_Size, fullfilledCondition, 100);
+
   }
   else
   {
-    snprintf(info, 256, "mol: %2ld  step: %5ld  Fitness: %10.6lf R^2: %10.6lf Similarity: %5ld/%-5ld\n", id, step,
-             parents[citizen].fitness, pow(RCorrelation(parents[citizen].phenotype), 2), variety, GA_Size);
+    snprintf(info, 256, "mol: %2zu  step: %5zu  Fitness: %10.6lf R^2: %10.6lf Similarity: %5zu/%-5zu\n",
+    id, step, parents[citizen].fitness, pow(RCorrelation(parents[citizen].phenotype), 2),
+    variety, GA_Size);
+
   }
   std::cout << info;
   std::cout << "number of parameters: " << parents[citizen].phenotype.numberOfParameters << std::endl;

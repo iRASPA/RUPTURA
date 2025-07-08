@@ -320,92 +320,93 @@ std::string Isotherm::gnuplotFunctionString(char c, size_t i) const
   char stringBuffer[1024];
 
   switch (type)
+{
+  case Isotherm::Type::Langmuir:
   {
-    case Isotherm::Type::Langmuir:
-    {
-      snprintf(stringBuffer, 1024, "%c[%ld]*%c[%ld]*x/(1.0+%c[%ld]*x)", c, i, c, i + 1, c, i + 1);
-      return stringBuffer;
-    }
-    case Isotherm::Type::Anti_Langmuir:
-    {
-      snprintf(stringBuffer, 1024, "%c[%ld]*x/(1.0-%c[%ld]*x)", c, i, c, i + 1);
-      return stringBuffer;
-    }
-    case Isotherm::Type::BET:
-    {
-      snprintf(stringBuffer, 1024, "%c[%ld]*%c[%ld]*x/((1.0-%c[%ld]*x)*(1.0-%c[%ld]+%c[%ld]*x))", c, i, c, i + 1, c,
-               i + 2, c, i + 2, c, i + 1);
-      return stringBuffer;
-    }
-    case Isotherm::Type::Henry:
-    {
-      snprintf(stringBuffer, 1024, "%c[%ld]*x", c, i);
-      return stringBuffer;
-    }
-    case Isotherm::Type::Freundlich:
-    {
-      snprintf(stringBuffer, 1024, "%c[%ld]*x**[%ld]", c, i, i + 1);
-      return stringBuffer;
-    }
-    case Isotherm::Type::Sips:
-    {
-      snprintf(stringBuffer, 1024, "%c[%ld]*((%c[%ld]*x)**(1.0/%c[%ld]))/(1.0+(%c[%ld]*x)**(1.0/%c[%ld]))", c, i, c,
-               i + 1, c, i + 2, c, i + 1, c, i + 2);
-      return stringBuffer;
-    }
-    case Isotherm::Type::Langmuir_Freundlich:
-    {
-      snprintf(stringBuffer, 1024, "%c[%ld]*%c[%ld]*x**%c[%ld]/(1.0+%c[%ld]*x**%c[%ld])", c, i, c, i + 1, c, i + 2, c,
-               i + 1, c, i + 2);
-      return stringBuffer;
-    }
-    case Isotherm::Type::Redlich_Peterson:
-    {
-      snprintf(stringBuffer, 1024, "%c[%ld]*x/(1.0+%c[%ld]*x**%c[%ld])", c, i, c, i + 1, c, i + 2);
-      return stringBuffer;
-    }
-    case Isotherm::Type::Toth:
-    {
-      snprintf(stringBuffer, 1024, "%c[%ld]*%c[%ld]*x/((1.0+(%c[%ld]*x)**%c[%ld])**(1.0/%c[%ld]))", c, i, c, i + 1, c,
-               i + 1, c, i + 2, c, i + 2);
-      return stringBuffer;
-    }
-    case Isotherm::Type::Unilan:
-    {
-      snprintf(stringBuffer, 1024,
-               "(%c[%ld]/(2.0*%c[%ld]))*log((1.0+%c[%ld]*exp(%c[%ld])*x)/(1.0+%c[%ld]*exp(-%c[%ld])*x))", c, i, c,
-               i + 2, c, i + 1, c, i + 2, c, i + 1, c, i + 2);
-      return stringBuffer;
-    }
-    case Isotherm::Type::OBrien_Myers:
-    {
-      snprintf(stringBuffer, 1024,
-               "%c[%ld]*(%c[%ld]*x/(1.0+%c[%ld]*x) + (%c[%ld]**2)*%c[%ld]*x*(1.0-%c[%ld]*x)/(2.0*(1.0+%c[%ld]*x)**3))",
-               c, i, c, i + 1, c, i + 1, c, i + 2, c, i + 1, c, i + 1, c, i + 1);
-      return stringBuffer;
-    }
-    case Isotherm::Type::Quadratic:
-    {
-      snprintf(stringBuffer, 1024, "%c[%ld]*(%c[%ld]*x+2.0*%c[%ld]*x**2)/(1.0+%c[%ld]*x+%c[%ld]*x**2)", c, i, c, i + 1,
-               c, i + 2, c, i + 1, c, i + 2);
-      return stringBuffer;
-    }
-    case Isotherm::Type::Temkin:
-    {
-      snprintf(stringBuffer, 1024,
-               "%c[%ld]*(%c[%ld]*x/(1.0+%c[%ld]*x))+%c[%ld]*%c[%ld]*((%c[%ld]*x/(1.0+%c[%ld]*x))**2)*(%c[%ld]*x/"
-               "(1.0+%c[%ld]*x)-1.0)",
-               c, i, c, i + 1, c, i + 1, c, i, c, i + 2, c, i + 1, c, i + 1, c, i + 1, c, i + 1);
-      return stringBuffer;
-    }
-    case Isotherm::Type::BingelWalton:
-    {
-      snprintf(stringBuffer, 1024,
-               "%c[%ld]*(1.0-exp(-(%c[%ld]+%c[%ld])*x))/(1.0+(%c[%ld]/%c[%ld])*exp(-(%c[%ld]+%c[%ld])*x))", c, i, c,
-               i + 1, c, i + 2, c, i + 2, c, i + 1, c, i + 1, c, i + 2);
-      return stringBuffer;
-    }
-    default:
-      throw std::runtime_error("Error: unkown isotherm type");
+    snprintf(stringBuffer, 1024, "%c[%zu]*%c[%zu]*x/(1.0+%c[%zu]*x)", c, i, c, i + 1, c, i + 1);
+    return stringBuffer;
   }
+  case Isotherm::Type::Anti_Langmuir:
+  {
+    snprintf(stringBuffer, 1024, "%c[%zu]*x/(1.0-%c[%zu]*x)", c, i, c, i + 1);
+    return stringBuffer;
+  }
+  case Isotherm::Type::BET:
+  {
+    snprintf(stringBuffer, 1024, "%c[%zu]*%c[%zu]*x/((1.0-%c[%zu]*x)*(1.0-%c[%zu]+%c[%zu]*x))", c, i, c, i + 1, c,
+             i + 2, c, i + 2, c, i + 1);
+    return stringBuffer;
+  }
+  case Isotherm::Type::Henry:
+  {
+    snprintf(stringBuffer, 1024, "%c[%zu]*x", c, i);
+    return stringBuffer;
+  }
+  case Isotherm::Type::Freundlich:
+  {
+    snprintf(stringBuffer, 1024, "%c[%zu]*x**[%zu]", c, i, i + 1);
+    return stringBuffer;
+  }
+  case Isotherm::Type::Sips:
+  {
+    snprintf(stringBuffer, 1024, "%c[%zu]*((%c[%zu]*x)**(1.0/%c[%zu]))/(1.0+(%c[%zu]*x)**(1.0/%c[%zu]))", c, i, c,
+             i + 1, c, i + 2, c, i + 1, c, i + 2);
+    return stringBuffer;
+  }
+  case Isotherm::Type::Langmuir_Freundlich:
+  {
+    snprintf(stringBuffer, 1024, "%c[%zu]*%c[%zu]*x**%c[%zu]/(1.0+%c[%zu]*x**%c[%zu])", c, i, c, i + 1, c, i + 2, c,
+             i + 1, c, i + 2);
+    return stringBuffer;
+  }
+  case Isotherm::Type::Redlich_Peterson:
+  {
+    snprintf(stringBuffer, 1024, "%c[%zu]*x/(1.0+%c[%zu]*x**%c[%zu])", c, i, c, i + 1, c, i + 2);
+    return stringBuffer;
+  }
+  case Isotherm::Type::Toth:
+  {
+    snprintf(stringBuffer, 1024, "%c[%zu]*%c[%zu]*x/((1.0+(%c[%zu]*x)**%c[%zu])**(1.0/%c[%zu]))", c, i, c, i + 1, c,
+             i + 1, c, i + 2, c, i + 2);
+    return stringBuffer;
+  }
+  case Isotherm::Type::Unilan:
+  {
+    snprintf(stringBuffer, 1024,
+             "(%c[%zu]/(2.0*%c[%zu]))*log((1.0+%c[%zu]*exp(%c[%zu])*x)/(1.0+%c[%zu]*exp(-%c[%zu])*x))", c, i, c,
+             i + 2, c, i + 1, c, i + 2, c, i + 1, c, i + 2);
+    return stringBuffer;
+  }
+  case Isotherm::Type::OBrien_Myers:
+  {
+    snprintf(stringBuffer, 1024,
+             "%c[%zu]*(%c[%zu]*x/(1.0+%c[%zu]*x) + (%c[%zu]**2)*%c[%zu]*x*(1.0-%c[%zu]*x)/(2.0*(1.0+%c[%zu]*x)**3))",
+             c, i, c, i + 1, c, i + 1, c, i + 2, c, i + 1, c, i + 1, c, i + 1);
+    return stringBuffer;
+  }
+  case Isotherm::Type::Quadratic:
+  {
+    snprintf(stringBuffer, 1024, "%c[%zu]*(%c[%zu]*x+2.0*%c[%zu]*x**2)/(1.0+%c[%zu]*x+%c[%zu]*x**2)", c, i, c, i + 1,
+             c, i + 2, c, i + 1, c, i + 2);
+    return stringBuffer;
+  }
+  case Isotherm::Type::Temkin:
+  {
+    snprintf(stringBuffer, 1024,
+             "%c[%zu]*(%c[%zu]*x/(1.0+%c[%zu]*x))+%c[%zu]*%c[%zu]*((%c[%zu]*x/(1.0+%c[%zu]*x))**2)*(%c[%zu]*x/"
+             "(1.0+%c[%zu]*x)-1.0)",
+             c, i, c, i + 1, c, i + 1, c, i, c, i + 2, c, i + 1, c, i + 1, c, i + 1, c, i + 1);
+    return stringBuffer;
+  }
+  case Isotherm::Type::BingelWalton:
+  {
+    snprintf(stringBuffer, 1024,
+             "%c[%zu]*(1.0-exp(-(%c[%zu]+%c[%zu])*x))/(1.0+(%c[%zu]/%c[%zu])*exp(-(%c[%zu]+%c[%zu])*x))", c, i, c,
+             i + 1, c, i + 2, c, i + 2, c, i + 1, c, i + 1, c, i + 2);
+    return stringBuffer;
+  }
+  default:
+    throw std::runtime_error("Error: unkown isotherm type");
+}
+
 }

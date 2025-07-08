@@ -5,9 +5,9 @@
 
 #include "isotherm.h"
 
-Component::Component(size_t _id, std::string _name, std::vector<Isotherm> _isotherms, double _Yi0, double _Kl,
-                     double _D, bool _isCarrierGas)
-    : id(_id), name(_name), Yi0(_Yi0), Kl(_Kl), D(_D), isCarrierGas(_isCarrierGas)
+Component::Component(size_t _id, std::string _name, std::vector<Isotherm> _isotherms, double _Yi0, double _Kl, double _Kl1,
+                     double _D, double _D1, bool _isCarrierGas)
+    : id(_id), name(_name), Yi0(_Yi0), Kl(_Kl), Kl1(_Kl1), D(_D), D1(_D1), isCarrierGas(_isCarrierGas) // k1, d1 added
 {
   isotherm.numberOfSites = _isotherms.size();
   for (Isotherm it : _isotherms)
@@ -31,7 +31,9 @@ std::string Component::repr() const
   if (!isCarrierGas)
   {
     s += "    mas-transfer coefficient: " + std::to_string(Kl) + " [1/s]\n";
+    s += "    2nd mas-transfer coefficient: " + std::to_string(Kl1) + " [1/s]\n";
     s += "    diffusion coefficient:     " + std::to_string(D) + " [m^2/s]\n";
+    s += "    2nd diffusion coefficient:     " + std::to_string(D1) + " [m^2/s]\n";
     s += isotherm.repr();
   }
   return s;

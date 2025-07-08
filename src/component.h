@@ -35,7 +35,7 @@ struct Component
    * \param _D Axial dispersion coefficient [m^2/s].
    * \param _isCarrierGas Optional flag indicating if this is the carrier gas (default is false).
    */
-  Component(size_t _id, std::string _name, std::vector<Isotherm> _isotherms, double _Yi0, double _Kl, double _D,
+  Component(size_t _id, std::string _name, std::vector<Isotherm> _isotherms, double _Yi0, double _Kl, double _Kl1, double _D, double _D1,
             bool _isCarrierGas = false);
 
   size_t id;                   ///< Identifier of the component.
@@ -43,8 +43,10 @@ struct Component
   std::string filename{};      ///< Filename associated with the component data.
   MultiSiteIsotherm isotherm;  ///< Isotherm information for the component.
   double Yi0;                  ///< Gas phase mol-fraction [-].
-  double Kl;                   ///< Mass transfer coefficient [1/s].
+  double Kl;                    ///< Mass transfer coefficient [1/s].
+  double Kl1;                   ///< Mass transfer 2nd coefficient [1/s].
   double D;                    ///< Axial dispersion coefficient [m^2/s].
+  double D1;                    ///< Axial dispersion 2nd coefficient [m^2/s].
   bool isCarrierGas{false};    ///< Flag indicating if this is the carrier gas.
 
   /**

@@ -1,0 +1,38 @@
+set encoding utf8
+set terminal pngcairo size ARG2,ARG3 enhanced font 'Arial,10'
+set xlabel 'Adsorber position / [m]' font 'Arial,14'
+set ylabel 'Partial pressure, {/Arial-Italic p}_i / [-]' offset 0.0,0 font 'Arial,14'
+set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'
+set linetype 1 pt 5 ps 1 lw 4 lc rgb '0xee0000'
+set linetype 2 pt 7 ps 1 lw 4 lc rgb '0x008b00'
+set linetype 3 pt 9 ps 1 lw 4 lc rgb '0x0000cd'
+set linetype 4 pt 11 ps 1 lw 4 lc rgb '0xff3fb3'
+set linetype 5 pt 13 ps 1 lw 4 lc rgb '0x00cdcd'
+set linetype 6 pt 15 ps 1 lw 4 lc rgb '0xcd9b1d'
+set linetype 7 pt  4 ps 1 lw 4 lc rgb '0x8968ed'
+set linetype 8 pt  6 ps 1 lw 4 lc rgb '0x8b8b83'
+set linetype 9 pt  8 ps 1 lw 4 lc rgb '0x00bb00'
+set linetype 10 pt 10 ps 1 lw 4 lc rgb '0x1e90ff'
+set linetype 11 pt 12 ps 1 lw 4 lc rgb '0x8b2500'
+set linetype 12 pt 14 ps 1 lw 4 lc rgb '0x000000'
+set bmargin 4
+set key title 'Zeoltie-5A-N2-exp2 {/:Italic T}=295 K, {/:Italic p_t}=1990 kPa'
+stats 'column.data' nooutput
+max = 0.0;
+do for [i=7:STATS_columns:6] {
+  stats 'column.data' us i nooutput
+  if (max<STATS_max) {
+    max=STATS_max
+  }
+}
+stats 'column.data' us 1 nooutput
+set xrange[0:STATS_max]
+set yrange[0:1.1*max]
+ev=int(ARG1)
+do for [i=0:int((STATS_blocks-2)/ev)] {
+  plot \
+    'column.data' us 1:7 index ev*i notitle  with li lt 1,\
+    'column.data' us 1:13 index ev*i notitle  with li lt 2,\
+    'column.data' us 1:7 index ev*i title 'Helium (y_i=0.867)' with po lt 1,\
+    'column.data' us 1:13 index ev*i title 'N2 (y_i=0.133)' with po lt 2
+}

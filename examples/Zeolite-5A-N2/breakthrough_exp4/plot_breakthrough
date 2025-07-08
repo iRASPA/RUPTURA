@@ -1,0 +1,30 @@
+set encoding utf8
+set xlabel 'Dimensionless time, {/Arial-Italic τ}={/Arial-Italic tv/L} / [-]' font "Arial,14"
+set ylabel 'Concentration exit gas, {/Arial-Italic c}_i/{/Arial-Italic c}_{i,0} / [-]' offset 0.0,0 font "Arial,14"
+set key outside top center horizontal samplen 2.5 height 0.5 spacing 1.5 font 'Arial, 10'
+set bmargin 4
+set yrange[0:]
+set key title 'Zeoltie-5A-N2-exp4 {/:Italic T}=295 K, {/:Italic p_t}=3420 kPa'
+set output 'breakthrough_dimensionless.pdf'
+set term pdf color solid
+set linetype 1 pt 5 ps 1 lw 4 lc rgb '0xee0000'
+set linetype 2 pt 7 ps 1 lw 4 lc rgb '0x008b00'
+set linetype 3 pt 9 ps 1 lw 4 lc rgb '0x0000cd'
+set linetype 4 pt 11 ps 1 lw 4 lc rgb '0xff3fb3'
+set linetype 5 pt 13 ps 1 lw 4 lc rgb '0x00cdcd'
+set linetype 6 pt 15 ps 1 lw 4 lc rgb '0xcd9b1d'
+set linetype 7 pt  4 ps 1 lw 4 lc rgb '0x8968ed'
+set linetype 8 pt  6 ps 1 lw 4 lc rgb '0x8b8b83'
+set linetype 9 pt  8 ps 1 lw 4 lc rgb '0x00bb00'
+set linetype 10 pt 10 ps 1 lw 4 lc rgb '0x1e90ff'
+set linetype 11 pt 12 ps 1 lw 4 lc rgb '0x8b2500'
+set linetype 12 pt 14 ps 1 lw 4 lc rgb '0x000000'
+ev=1
+plot \
+    "component_0_Helium.data" us ($1):($3) every ev title "Helium (y_i=0.84)" with li lt 1,\
+    "component_1_N2.data" us ($1):($3) every ev title "N2 (y_i=0.16)" with li lt 2
+set output 'breakthrough.pdf'
+set xlabel 'Time, {/Arial-Italic t} / [min.]' font "Arial,14"
+plot \
+    "component_0_Helium.data" us ($2):($3) every ev title "Helium (y_i=0.84)" with li lt 1,\
+    "component_1_N2.data" us ($2):($3) every ev title "N2 (y_i=0.16)" with li lt 2

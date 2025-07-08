@@ -66,6 +66,8 @@ Breakthrough::Breakthrough(const InputReader &inputReader)
       dptdx(inputReader.pressureGradient),
       epsilon(inputReader.columnVoidFraction),
       rho_p(inputReader.particleDensity),
+      rho_p1(inputReader.particleDensity1),
+      boundaryCoordinate(inputReader.boundary_coord),
       v_in(inputReader.columnEntranceVelocity),
       L(inputReader.columnLength),
       dx(L / static_cast<double>(Ngrid)),
@@ -76,7 +78,10 @@ Breakthrough::Breakthrough(const InputReader &inputReader)
       tpulse(inputReader.pulseTime),
       mixture(inputReader),
       maxIsothermTerms(inputReader.maxIsothermTerms),
-      prefactor(Ncomp),
+      prefactorLeft(Ncomp),
+      prefactorLeftGP(Ncomp),
+      prefactorRightGP(Ncomp),
+      prefactorRight(Ncomp),
       Yi(Ncomp),
       Xi(Ncomp),
       Ni(Ncomp),
@@ -94,14 +99,52 @@ Breakthrough::Breakthrough(const InputReader &inputReader)
       Dqdt((Ngrid + 1) * Ncomp),
       Dqdtnew((Ngrid + 1) * Ncomp),
       cachedP0((Ngrid + 1) * Ncomp * maxIsothermTerms),
-      cachedPsi((Ngrid + 1) * maxIsothermTerms)
+      cachedPsi((Ngrid + 1) * maxIsothermTerms) 
 {
+  indexLeft = 0;
+  indexMid = 0;
+  indexRight = 0;
+
+   for (size_t i = 0; i < Ngrid + 1; ++i)
+  {
+    if (boundaryCoordinate -  static_cast<double>(i) * dx < 0)  {
+       indexLeft = i - 1;
+       indexMid = 0;
+       indexRight = i;
+       break;
+    }
+
+    if (boundaryCoordinate - static_cast<double>(i) * dx == 0)  {
+       indexLeft = i - 1;
+       indexMid = i;
+       indexRight = i + 1;
+       break;
+    }
+
+    
+  }
+
+  if ( indexLeft == 0 ) {
+    relLeft = 1;
+    relRight = 0;
+  }
+
+  else {
+    dxLeft = boundaryCoordinate - static_cast<double>(indexLeft) * dx;
+    dxRight = static_cast<double>(indexRight) * dx - boundaryCoordinate;
+    relLeft = dxLeft / dx;
+    relRight = dxRight / dx;
+  }
+
+
+  //std::cout << indexLeft << " " << indexRight << " " << indexMid << std::endl;
+
 }
 
 Breakthrough::Breakthrough(std::string _displayName, std::vector<Component> _components, size_t _carrierGasComponent,
-                           size_t _numberOfGridPoints, size_t _printEvery, size_t _writeEvery, double _temperature,
+                            size_t _numberOfGridPoints, size_t _printEvery, size_t _writeEvery, double _temperature,
                            double _p_total, double _columnVoidFraction, double _pressureGradient,
-                           double _particleDensity, double _columnEntranceVelocity, double _columnLength,
+                           double _particleDensity, double _particleDensity1, double _boundary_len, double _columnEntranceVelocity, double _columnLength, //ADDED
                            double _timeStep, size_t _numberOfTimeSteps, bool _autoSteps, bool _pulse, double _pulseTime,
                            const MixturePrediction _mixture)
     : displayName(_displayName),
@@ -115,7 +158,9 @@ Breakthrough::Breakthrough(std::string _displayName, std::vector<Component> _com
       p_total(_p_total),
       dptdx(_pressureGradient),
       epsilon(_columnVoidFraction),
-      rho_p(_particleDensity),
+      rho_p(_particleDensity),  // ADDED
+      rho_p1(_particleDensity1),
+      boundaryCoordinate(_boundary_len),
       v_in(_columnEntranceVelocity),
       L(_columnLength),
       dx(L / static_cast<double>(Ngrid)),
@@ -126,7 +171,10 @@ Breakthrough::Breakthrough(std::string _displayName, std::vector<Component> _com
       tpulse(_pulseTime),
       mixture(_mixture),
       maxIsothermTerms(mixture.getMaxIsothermTerms()),
-      prefactor(Ncomp),
+      prefactorLeft(Ncomp),
+      prefactorLeftGP(Ncomp),
+      prefactorRightGP(Ncomp),
+      prefactorRight(Ncomp),
       Yi(Ncomp),
       Xi(Ncomp),
       Ni(Ncomp),
@@ -146,6 +194,39 @@ Breakthrough::Breakthrough(std::string _displayName, std::vector<Component> _com
       cachedP0((Ngrid + 1) * Ncomp * maxIsothermTerms),
       cachedPsi((Ngrid + 1) * maxIsothermTerms)
 {
+  indexLeft = 0;
+  indexMid = 0;
+  indexRight = 0;
+
+  for (size_t i = 0; i < Ngrid + 1; ++i)
+  {
+    if (boundaryCoordinate -  static_cast<double>(i) * dx < 0)  {
+       indexLeft = i - 1;
+       indexMid = 0;
+       indexRight = i;
+       break;
+    }
+
+    if ((boundaryCoordinate - static_cast<double>(i) * dx == 0) && boundaryCoordinate != L)  {
+       indexLeft = i - 1;
+       indexMid = i;
+       indexRight = i + 1;
+       break;
+    }
+  }
+
+  if ( indexLeft == 0 ) {
+    relLeft = 1;
+    relRight = 0;
+  }
+
+  else {
+    dxLeft = boundaryCoordinate - static_cast<double>(indexLeft) * dx;
+    dxRight = static_cast<double>(indexRight) * dx - boundaryCoordinate;
+    relLeft = dxLeft / dx;
+    relRight = dxRight / dx;
+  }
+
   initialize();
 }
 
@@ -154,7 +235,22 @@ void Breakthrough::initialize()
   // precomputed factor for mass transfer
   for (size_t j = 0; j < Ncomp; ++j)
   {
-    prefactor[j] = R * T * ((1.0 - epsilon) / epsilon) * rho_p * components[j].Kl;
+    prefactorLeft[j] = R * T * ((1.0 - epsilon) / epsilon) * rho_p * components[j].Kl;
+  }
+
+  for (size_t j = 0; j < Ncomp; ++j)
+  {
+    prefactorLeftGP[j] = R * T * ((1.0 - epsilon) / epsilon) * ( rho_p*relLeft + rho_p1*relRight ) * ( components[j].Kl*relLeft + components[j].Kl1*relRight );
+  }
+
+  for (size_t j = 0; j < Ncomp; ++j)
+  {
+    prefactorRightGP[j] = R * T * ((1.0 - epsilon) / epsilon) * ( rho_p*relRight + rho_p1*relLeft ) * ( components[j].Kl*relRight + components[j].Kl1*relLeft );
+  }
+  
+  for (size_t j = 0; j < Ncomp; ++j)
+  {
+    prefactorRight[j] = R * T * ((1.0 - epsilon) / epsilon) * rho_p1 * components[j].Kl1;
   }
 
   // set P and Q to zero
@@ -570,32 +666,80 @@ void Breakthrough::computeFirstDerivatives(std::vector<double> &dqdt, std::vecto
   double idx2 = 1.0 / (dx * dx);
 
   // first gridpoint
-  for (size_t j = 0; j < Ncomp; ++j)
-  {
-    dqdt[0 * Ncomp + j] = components[j].Kl * (q_eq[0 * Ncomp + j] - q[0 * Ncomp + j]);
-    dpdt[0 * Ncomp + j] = 0.0;
+  if ( indexLeft == 0 ) {
+    for (size_t j = 0; j < Ncomp; ++j)
+    {
+      dqdt[0 * Ncomp + j] = components[j].Kl1 * (q_eq[0 * Ncomp + j] - q[0 * Ncomp + j]);
+      dpdt[0 * Ncomp + j] = 0.0;
+    }
   }
+
+  else {
+    for (size_t j = 0; j < Ncomp; ++j)
+    {
+      dqdt[0 * Ncomp + j] = components[j].Kl * (q_eq[0 * Ncomp + j] - q[0 * Ncomp + j]);
+      dpdt[0 * Ncomp + j] = 0.0;
+    }
+  }
+  
 
   // middle gridpoints
   for (size_t i = 1; i < Ngrid; i++)
   {
-    for (size_t j = 0; j < Ncomp; ++j)
+    if ( i < indexLeft ) {      // When grid point < iL
+      for (size_t j = 0; j < Ncomp; ++j)
     {
       dqdt[i * Ncomp + j] = components[j].Kl * (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
       dpdt[i * Ncomp + j] =
           (v[i - 1] * p[(i - 1) * Ncomp + j] - v[i] * p[i * Ncomp + j]) * idx +
           components[j].D * (p[(i + 1) * Ncomp + j] - 2.0 * p[i * Ncomp + j] + p[(i - 1) * Ncomp + j]) * idx2 -
-          prefactor[j] * (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
+          prefactorLeft[j] * (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
     }
+  }
+    if ( i == indexLeft) {  // When grid point in iL
+      for (size_t j = 0; j < Ncomp; ++j)
+    {
+      dqdt[i * Ncomp + j] = (components[j].Kl * relLeft + components[j].Kl1 * relRight)* (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
+      dpdt[i * Ncomp + j] =
+          (v[i - 1] * p[(i - 1) * Ncomp + j] - v[i] * p[i * Ncomp + j]) * idx +
+           (components[j].D * relLeft + components[j].D1 * relRight) * (p[(i + 1) * Ncomp + j] - 2.0 * p[i * Ncomp + j] + p[(i - 1) * Ncomp + j]) * idx2 -
+          prefactorLeftGP[j] * (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
+    }
+  }
+
+  if ( i == indexRight ) {         // When grid point in iR
+      for (size_t j = 0; j < Ncomp; ++j)
+    {
+      dqdt[i * Ncomp + j] = (components[j].Kl * relRight + components[j].Kl1 * relLeft)* (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
+      dpdt[i * Ncomp + j] =
+          (v[i - 1] * p[(i - 1) * Ncomp + j] - v[i] * p[i * Ncomp + j]) * idx +
+          (components[j].D * relRight + components[j].D1 * relLeft) * (p[(i + 1) * Ncomp + j] - 2.0 * p[i * Ncomp + j] + p[(i - 1) * Ncomp + j]) * idx2 -
+          prefactorRightGP[j] * (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
+    }
+  }
+
+    if ( i > indexRight ) {      // When grid point > iR
+      for (size_t j = 0; j < Ncomp; ++j)
+    {
+      dqdt[i * Ncomp + j] = components[j].Kl1 * (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
+      dpdt[i * Ncomp + j] =
+          (v[i - 1] * p[(i - 1) * Ncomp + j] - v[i] * p[i * Ncomp + j]) * idx +
+          components[j].D1 * (p[(i + 1) * Ncomp + j] - 2.0 * p[i * Ncomp + j] + p[(i - 1) * Ncomp + j]) * idx2 -
+          prefactorRight[j] * (q_eq[i * Ncomp + j] - q[i * Ncomp + j]);
+    }
+
+    }
+    
+    
   }
 
   // last gridpoint
   for (size_t j = 0; j < Ncomp; ++j)
   {
-    dqdt[Ngrid * Ncomp + j] = components[j].Kl * (q_eq[Ngrid * Ncomp + j] - q[Ngrid * Ncomp + j]);
+    dqdt[Ngrid * Ncomp + j] = components[j].Kl1 * (q_eq[Ngrid * Ncomp + j] - q[Ngrid * Ncomp + j]);
     dpdt[Ngrid * Ncomp + j] = (v[Ngrid - 1] * p[(Ngrid - 1) * Ncomp + j] - v[Ngrid] * p[Ngrid * Ncomp + j]) * idx +
-                              components[j].D * (p[(Ngrid - 1) * Ncomp + j] - p[Ngrid * Ncomp + j]) * idx2 -
-                              prefactor[j] * (q_eq[Ngrid * Ncomp + j] - q[Ngrid * Ncomp + j]);
+                              components[j].D1 * (p[(Ngrid - 1) * Ncomp + j] - p[Ngrid * Ncomp + j]) * idx2 -
+                              prefactorRight[j] * (q_eq[Ngrid * Ncomp + j] - q[Ngrid * Ncomp + j]);
   }
 }
 
@@ -611,11 +755,13 @@ void Breakthrough::computeVelocity()
   for (size_t i = 1; i < Ngrid; ++i)
   {
     // sum = derivative at the actual gridpoint i
+    if (i < indexLeft) {
+    
     double sum = 0.0;
     for (size_t j = 0; j < Ncomp; ++j)
     {
       sum =
-          sum - prefactor[j] * (Qeqnew[i * Ncomp + j] - Qnew[i * Ncomp + j]) +
+          sum - prefactorLeft[j] * (Qeqnew[i * Ncomp + j] - Qnew[i * Ncomp + j]) +
           components[j].D * (Pnew[(i - 1) * Ncomp + j] - 2.0 * Pnew[i * Ncomp + j] + Pnew[(i + 1) * Ncomp + j]) * idx2;
     }
 
@@ -623,12 +769,53 @@ void Breakthrough::computeVelocity()
     Vnew[i] = Vnew[i - 1] + dx * (sum - Vnew[i - 1] * dptdx) / Pt[i];
   }
 
+  if (i == indexLeft) {
+    double sum = 0.0;
+    for (size_t j = 0; j < Ncomp; ++j)
+    {
+      sum =
+          sum - prefactorLeftGP[j] * (Qeqnew[i * Ncomp + j] - Qnew[i * Ncomp + j]) +
+           (components[j].D * relLeft + components[j].D1 * relRight) * (Pnew[(i - 1) * Ncomp + j] - 2.0 * Pnew[i * Ncomp + j] + Pnew[(i + 1) * Ncomp + j]) * idx2;
+    }
+
+    // explicit version
+    Vnew[i] = Vnew[i - 1] + dx * (sum - Vnew[i - 1] * dptdx) / Pt[i];
+  }
+
+  if (i == indexRight) {
+    double sum = 0.0;
+    for (size_t j = 0; j < Ncomp; ++j)
+    {
+      sum =
+          sum - prefactorRightGP[j] * (Qeqnew[i * Ncomp + j] - Qnew[i * Ncomp + j]) +
+           (components[j].D * relRight + components[j].D1 * relLeft) * (Pnew[(i - 1) * Ncomp + j] - 2.0 * Pnew[i * Ncomp + j] + Pnew[(i + 1) * Ncomp + j]) * idx2;
+    }
+
+    // explicit version
+    Vnew[i] = Vnew[i - 1] + dx * (sum - Vnew[i - 1] * dptdx) / Pt[i];
+  }
+
+  if (i > indexRight) {
+    double sum = 0.0;
+    for (size_t j = 0; j < Ncomp; ++j)
+    {
+      sum =
+          sum - prefactorRight[j] * (Qeqnew[i * Ncomp + j] - Qnew[i * Ncomp + j]) +
+           components[j].D1 * (Pnew[(i - 1) * Ncomp + j] - 2.0 * Pnew[i * Ncomp + j] + Pnew[(i + 1) * Ncomp + j]) * idx2;
+    }
+
+    // explicit version
+    Vnew[i] = Vnew[i - 1] + dx * (sum - Vnew[i - 1] * dptdx) / Pt[i];
+  }
+    
+  }
+
   // last grid point
   double sum = 0.0;
   for (size_t j = 0; j < Ncomp; ++j)
   {
-    sum = sum - prefactor[j] * (Qeqnew[Ngrid * Ncomp + j] - Qnew[Ngrid * Ncomp + j]) +
-          components[j].D * (Pnew[(Ngrid - 1) * Ncomp + j] - Pnew[Ngrid * Ncomp + j]) * idx2;
+    sum = sum - prefactorRight[j] * (Qeqnew[Ngrid * Ncomp + j] - Qnew[Ngrid * Ncomp + j]) +
+          components[j].D1 * (Pnew[(Ngrid - 1) * Ncomp + j] - Pnew[Ngrid * Ncomp + j]) * idx2;
   }
 
   // explicit version
@@ -644,9 +831,13 @@ std::string Breakthrough::repr() const
   s += "=======================================================\n";
   s += "Display-name:                          " + displayName + "\n";
   s += "Temperature:                           " + std::to_string(T) + " [K]\n";
+  s += "RelRight:                              " + std::to_string(relRight) + " [K]\n";
+  s += "RelLeft:                               " + std::to_string(relLeft) + " [K]\n";
   s += "Column length:                         " + std::to_string(L) + " [m]\n";
   s += "Column void-fraction:                  " + std::to_string(epsilon) + " [-]\n";
   s += "Particle density:                      " + std::to_string(rho_p) + " [kg/m^3]\n";
+  s += "2nd Particle density:                  " + std::to_string(rho_p1) + " [kg/m^3]\n";
+  s += "X-Coord of the boundary:               " + std::to_string(boundaryCoordinate) + " [m]\n";
   s += "Total pressure:                        " + std::to_string(p_total) + " [Pa]\n";
   s += "Pressure gradient:                     " + std::to_string(dptdx) + " [Pa/m]\n";
   s += "Column entrance interstitial velocity: " + std::to_string(v_in) + " [m/s]\n";

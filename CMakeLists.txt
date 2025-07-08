@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.14)
 
 project(ruptura LANGUAGES CXX)
 
+include_directories("C:/msys64/mingw64/include/python3.12")
+include_directories("C:/msys64/mingw64/lib/python3.12/site-packages/pybind11/include")
+
 # Set the C++ standard to C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

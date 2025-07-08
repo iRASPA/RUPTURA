@@ -59,8 +59,8 @@ struct Breakthrough
    */
   Breakthrough(std::string _displayName, std::vector<Component> _components, size_t _carrierGasComponent,
                size_t _numberOfGridPoints, size_t _printEvery, size_t _writeEvery, double _temperature, double _p_total,
-               double _columnVoidFraction, double _pressureGradient, double _particleDensity,
-               double _columnEntranceVelocity, double _columnLength, double _timeStep, size_t _numberOfTimeSteps,
+               double _columnVoidFraction, double _pressureGradient, double _particleDensity, double _particleDensity1,
+               double _boundary_len, double _columnEntranceVelocity, double _columnLength, double _timeStep, size_t _numberOfTimeSteps,
                bool _autoSteps, bool _pulse, double _pulseTime, const MixturePrediction _mixture);
 
   /**
@@ -148,13 +148,19 @@ struct Breakthrough
   double dptdx;    ///< Pressure gradient [N/m³].
   double epsilon;  ///< Void-fraction of the column [-].
   double rho_p;    ///< Particle density [kg/m³].
+  double rho_p1;    ///< Particle density [kg/m³].
+  double boundaryCoordinate;  ///< boundary x coord
+  size_t indexLeft;
+  size_t indexRight;
+  size_t indexMid;
+  double dxLeft, dxRight, relLeft, relRight;
   double v_in;     ///< Interstitial velocity at the beginning of the column [m/s].
 
   double L;                                         ///< Length of the column.
   double dx;                                        ///< Spacing in spatial direction.
   double dt;                                        ///< Time step for integration.
   size_t Nsteps;                                    ///< Total number of steps.
-  bool autoSteps;                                   ///< Flag to use automatic number of steps.
+  bool autoSteps;                                    ///< Flag to use automatic number of steps.
   bool pulse;                                       ///< Pulsed inlet condition for breakthrough.
   double tpulse;                                    ///< Pulse time.
   MixturePrediction mixture;                        ///< MixturePrediction object for mixture predictions.
@@ -162,7 +168,10 @@ struct Breakthrough
   std::pair<size_t, size_t> iastPerformance{0, 0};  ///< Performance metrics for IAST calculations.
 
   // vector of size 'Ncomp'
-  std::vector<double> prefactor;  ///< Precomputed factors for mass transfer.
+  std::vector<double> prefactorLeft;  ///< Precomputed factors for mass transfer.
+  std::vector<double> prefactorLeftGP;  ///< Precomputed factors for mass transfer.
+  std::vector<double> prefactorRightGP;  ///< Precomputed factors for mass transfer.
+  std::vector<double> prefactorRight;  ///< Precomputed factors for mass transfer.
   std::vector<double> Yi;         ///< Ideal gas mole fractions for each component.
   std::vector<double> Xi;         ///< Adsorbed mole fractions for each component.
   std::vector<double> Ni;         ///< Number of molecules for each component.

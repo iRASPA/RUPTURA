@@ -261,6 +261,13 @@ InputReader::InputReader(const std::string fileName) : components()
         this->particleDensity = value;
         continue;
       }
+      
+      if (caseInSensStringCompare(keyword, "ParticleDensity_1"))
+      {
+        double value = parseDouble(arguments, keyword, lineNumber);
+        this->particleDensity1 = value;
+        continue;
+      }
       if (caseInSensStringCompare(keyword, "TotalPressure"))
       {
         double value = parseDouble(arguments, keyword, lineNumber);
@@ -378,6 +385,12 @@ InputReader::InputReader(const std::string fileName) : components()
         this->columnLength = value;
         continue;
       }
+      if (caseInSensStringCompare(keyword, "BoundaryCoord"))
+      {
+        double value = parseDouble(arguments, keyword, lineNumber);
+        this->boundary_coord = value;
+        continue;
+      }
       if (caseInSensStringCompare(keyword, "NumberOfGridPoints"))
       {
         size_t value = parse<size_t>(arguments, keyword, lineNumber);
@@ -446,10 +459,22 @@ InputReader::InputReader(const std::string fileName) : components()
         components[numberOfComponents - 1].Kl = value;
         continue;
       }
+      if (caseInSensStringCompare(keyword, "MassTransferCoefficient_1"))
+      {
+        double value = parseDouble(arguments, keyword, lineNumber);
+        components[numberOfComponents - 1].Kl1 = value;
+        continue;
+      }
       if (caseInSensStringCompare(keyword, "AxialDispersionCoefficient"))
       {
         double value = parseDouble(arguments, keyword, lineNumber);
         components[numberOfComponents - 1].D = value;
+        continue;
+      }
+      if (caseInSensStringCompare(keyword, "AxialDispersionCoefficient_1"))
+      {
+        double value = parseDouble(arguments, keyword, lineNumber);
+        components[numberOfComponents - 1].D1 = value;
         continue;
       }
 

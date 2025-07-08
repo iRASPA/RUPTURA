@@ -1,0 +1,29 @@
+SimulationType           Breakthrough
+
+// Column settings
+DisplayName              Zeoltie-5A-N2-exp6
+Temperature              295           // [K]
+ColumnVoidFraction       0.4             // [-]
+ParticleDensity          1180       // [kg/m^3]
+TotalPressure            2.03E+06           // [Pa]
+PressureGradient         -1.37E+04         // [Pa/m]
+ColumnEntranceVelocity   1.12E-02      // [m/s]
+ColumnLength             0.365             // [m]
+
+// Run settings
+NumberOfTimeSteps       auto
+PrintEvery              1000
+WriteEvery              100
+TimeStep                0.05           // [s]
+NumberOfGridPoints      100
+
+Component 0 MoleculeName               Helium
+            GasPhaseMolFraction        0.75    // [-]
+            CarrierGas                 yes
+
+Component 1 MoleculeName               N2
+            GasPhaseMolFraction        0.25    // [-]
+            MassTransferCoefficient    0.099   // [1/s]
+            AxialDispersionCoefficient 0.0001     // [m^2/s]
+            NumberOfIsothermSites      1
+            Langmuir                   1.26         8.12513743e-06

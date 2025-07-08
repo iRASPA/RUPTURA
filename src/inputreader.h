@@ -47,10 +47,12 @@ struct InputReader
   double temperature{433.0};                                    ///< The simulation temperature in Kelvin.
   double columnVoidFraction{0.4};                               ///< The void fraction of the column.
   double particleDensity{1000.0};                               ///< The density of the particles in kg/m^3.
+  double particleDensity1{1000.0};                              ///< The density of the 2nd particles in kg/m^3.    
   double totalPressure{1.0e6};                                  ///< The total pressure in the system in Pa.
   double pressureGradient{0.0};                                 ///< The pressure gradient in the column.
   double columnEntranceVelocity{0.1};                           ///< The entrance velocity of the column in m/s.
   double columnLength{0.3};                                     ///< The length of the column in meters.
+  double boundary_coord{0.15};                                  ///< The x-coord of the boundary
 
   size_t numberOfTimeSteps{0};       ///< The number of time steps in the simulation.
   bool autoNumberOfTimeSteps{true};  ///< Whether to automatically determine the number of time steps.
