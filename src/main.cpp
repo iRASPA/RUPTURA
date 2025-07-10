@@ -19,12 +19,13 @@ int main(void)
       {
         Breakthrough breakthrough(reader);
         
-
+        
         breakthrough.print();
         breakthrough.initialize();
         breakthrough.createPlotScript();
         breakthrough.createMovieScripts();
         breakthrough.run();
+        
         break;
       }
       case InputReader::SimulationType::MixturePrediction:

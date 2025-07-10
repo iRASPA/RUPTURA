@@ -10,10 +10,10 @@ void MultiSiteIsotherm::print() const { std::cout << repr(); }
 std::string MultiSiteIsotherm::repr() const
 {
   std::string s;
-  s += "    number of isotherm sites:  " + std::to_string(numberOfSites) + "\n";
-  for (size_t i = 0; i < numberOfSites; ++i)
+  s += "    number of isotherm sites:  " + std::to_string(numberOfSitesLayers) + "\n";   // there was numberOfSites instead numberOfSiteLayers
+  for (size_t i = 0; i < numberOfSitesLayers; ++i) // there was numberOfSites instead numberOfSiteLayers
   {
-    s += sites[i].repr();
+    s += sites[i].repr();       // sites uses to store multi isotherms, but now we'll use it like a storage for isotherm-layer object (1st isotherm for 1st layer, 2nd isotherm for 2nd layer), if you want use 
   }
   return s;
 }
@@ -22,7 +22,7 @@ void MultiSiteIsotherm::add(const Isotherm &isotherm)
 {
   siteParameterIndex.push_back(numberOfParameters);
   sites.push_back(isotherm);
-
+  numberOfSitesLayers++;
   numberOfParameters += isotherm.numberOfParameters;
   for (size_t i = 0; i < isotherm.numberOfParameters; ++i)
   {

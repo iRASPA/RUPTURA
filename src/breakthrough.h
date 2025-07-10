@@ -166,6 +166,7 @@ struct Breakthrough
   MixturePrediction mixture;                        ///< MixturePrediction object for mixture predictions.
   size_t maxIsothermTerms;                          ///< Maximum number of isotherm terms.
   std::pair<size_t, size_t> iastPerformance{0, 0};  ///< Performance metrics for IAST calculations.
+  std::pair<size_t, size_t> iastPerformance1{0, 0};  ///< Performance metrics for IAST calculations.
 
   // vector of size 'Ncomp'
   std::vector<double> prefactorLeft;  ///< Precomputed factors for mass transfer.
@@ -173,8 +174,11 @@ struct Breakthrough
   std::vector<double> prefactorRightGP;  ///< Precomputed factors for mass transfer.
   std::vector<double> prefactorRight;  ///< Precomputed factors for mass transfer.
   std::vector<double> Yi;         ///< Ideal gas mole fractions for each component.
+  std::vector<double> Yi1;         ///< Ideal gas mole fractions for each component.
   std::vector<double> Xi;         ///< Adsorbed mole fractions for each component.
+  std::vector<double> Xi1;         ///< Adsorbed mole fractions for each component.
   std::vector<double> Ni;         ///< Number of molecules for each component.
+  std::vector<double> Ni1;         ///< Number of molecules for each component.
 
   // vector of size '(Ngrid + 1)'
   std::vector<double> V;     ///< Interstitial gas velocity along the column.
@@ -186,14 +190,18 @@ struct Breakthrough
   std::vector<double> Pnew;       ///< Updated partial pressures.
   std::vector<double> Q;          ///< Volume-averaged adsorption amount at every grid point for each component.
   std::vector<double> Qnew;       ///< Updated adsorption amounts.
-  std::vector<double> Qeq;        ///< Equilibrium adsorption amount at every grid point for each component.
-  std::vector<double> Qeqnew;     ///< Updated equilibrium adsorption amounts.
+  std::vector<double> Qeq;
+  std::vector<double> Qeq1;          ///< Equilibrium adsorption amount at every grid point for each component.
+  std::vector<double> Qeqnew; 
+  std::vector<double> Qeqnew1;    ///< Updated equilibrium adsorption amounts.
   std::vector<double> Dpdt;       ///< Derivative of P with respect to time.
   std::vector<double> Dpdtnew;    ///< Updated derivative of P with respect to time.
   std::vector<double> Dqdt;       ///< Derivative of Q with respect to time.
   std::vector<double> Dqdtnew;    ///< Updated derivative of Q with respect to time.
   std::vector<double> cachedP0;   ///< Cached hypothetical pressure.
+  std::vector<double> cachedP01;   ///< Cached hypothetical pressure.
   std::vector<double> cachedPsi;  ///< Cached reduced grand potential over the column.
+  std::vector<double> cachedPsi1;  ///< Cached reduced grand potential over the column.
 
   enum class IntegrationScheme
   {
@@ -213,9 +221,9 @@ struct Breakthrough
    * \param v Interstitial gas velocities.
    * \param p Partial pressures.
    */
-  void computeFirstDerivatives(std::vector<double> &dqdt, std::vector<double> &dpdt, const std::vector<double> &q_eq,
-                               const std::vector<double> &q, const std::vector<double> &v,
-                               const std::vector<double> &p);
+  void computeFirstDerivatives(std::vector<double> &dqdt, std::vector<double> &dpdt,
+                                           const std::vector<double> &q_eq, const std::vector<double> &q,
+                                           const std::vector<double> &v, const std::vector<double> &pp);
 
   /**
    * \brief Computes a single simulation step.

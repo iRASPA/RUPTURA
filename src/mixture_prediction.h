@@ -186,7 +186,7 @@ class MixturePrediction
    * \param cachedPsi An array to cache intermediate psi calculations.
    * \return A pair containing the number of IAST steps and a status code.
    */
-  std::pair<size_t, size_t> predictMixture(const std::vector<double> &Yi, const double &P, std::vector<double> &Xi,
+  std::pair<size_t, size_t> predictMixture(size_t site, const std::vector<double> &Yi, const double &P, std::vector<double> &Xi,
                                            std::vector<double> &Ni, double *cachedP0, double *cachedPsi);
 
  private:
@@ -257,7 +257,7 @@ class MixturePrediction
    * \param cachedPsi An array to cache intermediate psi calculations.
    * \return A pair containing the number of IAST steps and a status code.
    */
-  std::pair<size_t, size_t> computeFastIAST(const std::vector<double> &Yi, const double &P, std::vector<double> &Xi,
+  std::pair<size_t, size_t> computeFastIAST(size_t site, const std::vector<double> &Yi, const double &P, std::vector<double> &Xi,
                                             std::vector<double> &Ni, double *cachedP0, double *cachedPsi);
 
   /**

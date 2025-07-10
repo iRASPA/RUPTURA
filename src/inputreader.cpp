@@ -494,6 +494,7 @@ InputReader::InputReader(const std::string fileName) : components()
         values.resize(2);
         Isotherm isotherm = Isotherm(Isotherm::Type::Langmuir, values, 2);
         components[numberOfComponents - 1].isotherm.add(isotherm);
+        std::cout << "ADDED ISOTHERM LANGMUIR!" << std::endl;
         continue;
       }
       if (caseInSensStringCompare(keyword, "Anti-Langmuir"))
@@ -530,6 +531,7 @@ InputReader::InputReader(const std::string fileName) : components()
         values.resize(1);
         Isotherm isotherm = Isotherm(Isotherm::Type::Henry, values, 1);
         components[numberOfComponents - 1].isotherm.add(isotherm);
+        std::cout << "ADDED ISOTHERM HENRY!" << std::endl;
         continue;
       }
       if (caseInSensStringCompare(keyword, "Freundlich"))

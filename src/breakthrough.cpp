@@ -331,7 +331,7 @@ void Breakthrough::initialize()
       Yi[j] /= sum;
     }
 
-    iastPerformance += mixture.predictMixture(Yi, pt_init[i], Xi, Ni, &cachedP0[i * Ncomp * maxIsothermTerms],
+    iastPerformance += mixture.predictMixture(0, Yi, pt_init[i], Xi, Ni, &cachedP0[i * Ncomp * maxIsothermTerms],
                                               &cachedPsi[i * maxIsothermTerms]);
 
     for (size_t j = 0; j < Ncomp; ++j)
@@ -666,7 +666,7 @@ void Breakthrough::computeEquilibriumLoadings()
     }
 
     // use Yi and Pt[i] to compute the loadings in the adsorption mixture via mixture prediction
-    iastPerformance += mixture.predictMixture(Yi, Pt[i], Xi, Ni, &cachedP0[i * Ncomp * maxIsothermTerms],
+    iastPerformance += mixture.predictMixture(0, Yi, Pt[i], Xi, Ni, &cachedP0[i * Ncomp * maxIsothermTerms],
                                               &cachedPsi[i * maxIsothermTerms]);
 
     for (size_t j = 0; j < Ncomp; ++j)

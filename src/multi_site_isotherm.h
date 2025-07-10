@@ -22,6 +22,7 @@
 struct MultiSiteIsotherm
 {
   size_t numberOfSites{0};        ///< The number of isotherm sites included in the model.
+  size_t numberOfSitesLayers{0};
   std::vector<Isotherm> sites{};  ///< A vector containing the individual isotherm site objects.
 
   size_t numberOfParameters{0};  ///< The total number of parameters across all isotherm sites.
@@ -150,7 +151,7 @@ struct MultiSiteIsotherm
    */
   inline double value(size_t site, double pressure) const
   {
-    if (site < numberOfSites)
+    if (site < numberOfSites + 1)         // site < numberOfSites
     {
       return sites[site].value(pressure);
     }
@@ -186,7 +187,7 @@ struct MultiSiteIsotherm
    */
   inline double psiForPressure(size_t site, double pressure) const
   {
-    if (site < numberOfSites)
+    if (site < numberOfSites + 1)  // site < numberOfSites
     {
       return sites[site].psiForPressure(pressure);
     }
@@ -218,7 +219,7 @@ struct MultiSiteIsotherm
    */
   double inversePressureForPsi(size_t site, double reduced_grand_potential, double &cachedP0) const
   {
-    if (site < numberOfSites)
+    if (site < numberOfSites + 1)  // site < numberOfSites
     {
       return sites[site].inversePressureForPsi(reduced_grand_potential, cachedP0);
     }
