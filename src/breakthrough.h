@@ -164,6 +164,7 @@ struct Breakthrough
   bool pulse;                                       ///< Pulsed inlet condition for breakthrough.
   double tpulse;                                    ///< Pulse time.
   MixturePrediction mixture;                        ///< MixturePrediction object for mixture predictions.
+  MixturePrediction mixture1;                        ///< MixturePrediction object for mixture predictions.
   size_t maxIsothermTerms;                          ///< Maximum number of isotherm terms.
   std::pair<size_t, size_t> iastPerformance{0, 0};  ///< Performance metrics for IAST calculations.
   std::pair<size_t, size_t> iastPerformance1{0, 0};  ///< Performance metrics for IAST calculations.
@@ -222,7 +223,7 @@ struct Breakthrough
    * \param p Partial pressures.
    */
   void computeFirstDerivatives(std::vector<double> &dqdt, std::vector<double> &dpdt,
-                                           const std::vector<double> &q_eq, const std::vector<double> &q,
+                                           const std::vector<double> &q_eq, const std::vector<double> &q_eq1, const std::vector<double> &q,
                                            const std::vector<double> &v, const std::vector<double> &pp);
 
   /**
